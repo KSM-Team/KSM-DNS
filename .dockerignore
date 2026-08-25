@@ -1,0 +1,28 @@
+# Data directory (contains database, keys, uploads)
+data/
+
+# Node
+**/node_modules
+**/.npm
+
+# Build artifacts
+backend/ksm-dns
+frontend/dist
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/tmp
+
+# Git
+.git
+.gitignore

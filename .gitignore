@@ -1,0 +1,31 @@
+# Data
+data/
+
+# Node
+frontend/node_modules
+frontend/dist
+
+# Build
+backend/ksm-dns
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/tmp
+
+# Claude
+.claude
+.commandcode
+.agents
+.plan
+PLAN.md
+skills-lock.json

@@ -1,0 +1,19 @@
+services:
+  ksm-dns:
+    build: .
+    container_name: ksm-dns
+    ports:
+      - "8910:8910"
+    volumes:
+      - ksm-data:/app/data
+    environment:
+      - KSM_ADMIN_USER=${KSM_ADMIN_USER:-}
+      - KSM_ADMIN_PASSWORD=${KSM_ADMIN_PASSWORD:-}
+      - KSM_JWT_SECRET=${KSM_JWT_SECRET:-}
+      - KSM_TLS_CERT=${KSM_TLS_CERT:-}
+      - KSM_TLS_KEY=${KSM_TLS_KEY:-}
+    restart: unless-stopped
+
+volumes:
+  ksm-data:
+    driver: local
