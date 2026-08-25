@@ -48,6 +48,17 @@
 
 ---
 
+## 📦 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Backend** | Go 1.25 + Gin + GORM + SQLite + JWT + bcrypt + robfig/cron + ACME (Let's Encrypt) + SSH |
+| **Frontend** | React 19 + TypeScript + Vite + Arco Design + Zustand + Axios + React Router + VChart |
+| **Storage** | SQLite (`data/ksm.db`) + local file uploads |
+| **Communication** | RESTful API + Web Push |
+
+---
+
 ## 🚀 Quick Start
 
 ### Docker Compose Deployment (Recommended)

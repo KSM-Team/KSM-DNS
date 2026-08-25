@@ -48,6 +48,17 @@
 
 ---
 
+## 📦 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| **后端** | Go 1.25 + Gin + GORM + SQLite + JWT + bcrypt + robfig/cron + ACME (Let's Encrypt) + SSH |
+| **前端** | React 19 + TypeScript + Vite + Arco Design + Zustand + Axios + React Router + VChart |
+| **存储** | SQLite（数据文件 `data/ksm.db`） + 本地文件上传 |
+| **通信** | RESTful API + Web Push |
+
+---
+
 ## 🚀 快速开始
 
 ### Docker Compose 部署（推荐）
