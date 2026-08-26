@@ -89,7 +89,7 @@ export default function Dashboard() {
   return (
     <div>
       <h3 style={{ marginBottom: 16 }}>仪表盘</h3>
-      <Row gutter={16}>
+      <Row gutter={16} className="dashboard-stats">
         <Col span={6}>
           <Card>
             <Statistic
@@ -128,7 +128,7 @@ export default function Dashboard() {
         </Col>
       </Row>
 
-      <Row gutter={16} style={{ marginTop: 16 }}>
+      <Row gutter={16} className="dashboard-charts" style={{ marginTop: 16 }}>
         <Col span={12}>
           <Card title="平台域名分布">
             {platformPie.length ? (

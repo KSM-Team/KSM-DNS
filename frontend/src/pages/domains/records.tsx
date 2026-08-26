@@ -269,23 +269,25 @@ export default function DomainRecords() {
           </Space>
         </div>
 
-        <Table
-          columns={columns}
-          data={records}
-          rowKey="id"
-          loading={loading}
-          rowSelection={{ selectedRowKeys: selectedKeys, onChange: (keys) => setSelectedKeys(keys as number[]) }}
-          pagination={{
-            current: page,
-            pageSize,
-            total,
-            showTotal: true,
-            onChange: (p, ps) => {
-              setPage(p)
-              setPageSize(ps)
-            },
-          }}
-        />
+        <div className="table-responsive">
+          <Table
+            columns={columns}
+            data={records}
+            rowKey="id"
+            loading={loading}
+            rowSelection={{ selectedRowKeys: selectedKeys, onChange: (keys) => setSelectedKeys(keys as number[]) }}
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              showTotal: true,
+              onChange: (p, ps) => {
+                setPage(p)
+                setPageSize(ps)
+              },
+            }}
+          />
+        </div>
       </Card>
 
       <Modal

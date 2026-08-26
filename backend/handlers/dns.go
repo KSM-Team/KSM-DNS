@@ -57,6 +57,10 @@ func (h *DNSHandler) ListPlatforms(c *gin.Context) {
 	if !isAdmin {
 		query = query.Where("id IN (SELECT platform_id FROM domains WHERE id IN ?)", domainIDs)
 	}
+	if kw := c.Query("keyword"); kw != "" {
+		like := "%" + kw + "%"
+		query = query.Where("name LIKE ? OR type LIKE ?", like, like)
+	}
 
 	p := parsePagination(c, 20)
 	var total int64
@@ -209,6 +213,50 @@ func (h *DNSHandler) SyncDomains(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "同步完成", "added": added, "total": len(domains)})
 }
 
+// SyncAllDomains syncs domains from all platforms at once.
+func (h *DNSHandler) SyncAllDomains(c *gin.Context) {
+	var platforms []models.DNSPlatform
+	h.DB.Find(&platforms)
+
+	var totalAdded int
+	var totalDomains int
+	var errors []string
+
+	for _, platform := range platforms {
+		provider, err := h.getProvider(platform)
+		if err != nil {
+			errors = append(errors, platform.Name+": 初始化失败")
+			continue
+		}
+		domains, err := provider.ListDomains()
+		if err != nil {
+			errors = append(errors, platform.Name+": "+err.Error())
+			continue
+		}
+		totalDomains += len(domains)
+		for _, d := range domains {
+			var existing models.Domain
+			result := h.DB.Where("platform_id = ? AND domain = ?", platform.ID, d).First(&existing)
+			if result.Error != nil {
+				h.DB.Create(&models.Domain{
+					PlatformID: platform.ID,
+					Domain:     d,
+					Status:     "active",
+				})
+				totalAdded++
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "批量同步完成",
+		"added":         totalAdded,
+		"total":         totalDomains,
+		"platforms":     len(platforms),
+		"errors":        errors,
+	})
+}
+
 func (h *DNSHandler) ListDomains(c *gin.Context) {
 	var domains []models.Domain
 	query := h.DB.Preload("Platform")
@@ -219,6 +267,10 @@ func (h *DNSHandler) ListDomains(c *gin.Context) {
 	}
 	if pid := c.Query("platform_id"); pid != "" {
 		query = query.Where("platform_id = ?", pid)
+	}
+	if kw := c.Query("keyword"); kw != "" {
+		like := "%" + kw + "%"
+		query = query.Where("domain LIKE ?", like)
 	}
 
 	p := parsePagination(c, 20)

@@ -8,8 +8,22 @@ body {
   height: 100vh;
 }
 
-/* ========== Mobile responsive (< 768px) ========== */
+/* Table horizontal scroll wrapper */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive .arco-table {
+  width: 100%;
+}
+
 @media (max-width: 767px) {
+  /* Clip any accidental horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+
   /* Hide button text on mobile — only icons remain visible */
   .mobile-btn-text {
     display: none;
@@ -35,10 +49,16 @@ body {
     flex-wrap: wrap;
   }
 
-  /* Table horizontal scroll wrapper */
-  .table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  /* Prevent text breaking into single chars — data cells */
+  .arco-table td,
+  .arco-table th {
+    white-space: nowrap !important;
+  }
+
+  /* Action column: allow wrapping so it doesn't create empty space */
+  .arco-table td:last-child,
+  .arco-table th:last-child {
+    white-space: normal !important;
   }
 
   /* Reduce card padding on mobile */
@@ -65,5 +85,42 @@ body {
   /* Hide pagination text on mobile, keep only page buttons */
   .arco-pagination-text {
     display: none;
+  }
+
+  /* Modal: full-width on mobile, reduce padding */
+  .arco-modal {
+    width: calc(100vw - 32px) !important;
+    max-width: none !important;
+  }
+
+  .arco-modal-body {
+    padding: 16px !important;
+  }
+
+  .arco-modal-header {
+    padding: 12px 16px !important;
+  }
+
+  .arco-modal-footer {
+    padding: 12px 16px !important;
+  }
+
+  /* Form items: reduce spacing */
+  .arco-modal .arco-form-item {
+    margin-bottom: 12px;
+  }
+
+  /* Dashboard: stack stat cards 2 per row */
+  .dashboard-stats .arco-col {
+    flex: 0 0 50% !important;
+    width: 50% !important;
+    margin-bottom: 8px;
+  }
+
+  /* Dashboard: stack charts vertically */
+  .dashboard-charts .arco-col {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    margin-bottom: 16px;
   }
 }

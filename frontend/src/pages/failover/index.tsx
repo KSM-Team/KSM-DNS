@@ -352,41 +352,45 @@ export default function Failover() {
                 </Button>
               </Space>
             </div>
-            <Table
-              columns={ruleColumns}
-              data={rules}
-              rowKey="id"
-              pagination={{
-                current: rulePage,
-                pageSize: rulePageSize,
-                total: ruleTotal,
-                showTotal: true,
-                onChange: (p, ps) => {
-                  setRulePage(p)
-                  setRulePageSize(ps)
-                },
-              }}
-              loading={loading}
-            />
+            <div className="table-responsive">
+              <Table
+                columns={ruleColumns}
+                data={rules}
+                rowKey="id"
+                pagination={{
+                  current: rulePage,
+                  pageSize: rulePageSize,
+                  total: ruleTotal,
+                  showTotal: true,
+                  onChange: (p, ps) => {
+                    setRulePage(p)
+                    setRulePageSize(ps)
+                  },
+                }}
+                loading={loading}
+              />
+            </div>
           </Card>
         </TabPane>
         <TabPane key="logs" title="切换日志">
           <Card>
-            <Table
-              columns={logColumns}
-              data={logs}
-              rowKey="id"
-              pagination={{
-                current: logPage,
-                pageSize: logPageSize,
-                total: logTotal,
-                showTotal: true,
-                onChange: (p, ps) => {
-                  setLogPage(p)
-                  setLogPageSize(ps)
-                },
-              }}
-            />
+            <div className="table-responsive">
+              <Table
+                columns={logColumns}
+                data={logs}
+                rowKey="id"
+                pagination={{
+                  current: logPage,
+                  pageSize: logPageSize,
+                  total: logTotal,
+                  showTotal: true,
+                  onChange: (p, ps) => {
+                    setLogPage(p)
+                    setLogPageSize(ps)
+                  },
+                }}
+              />
+            </div>
           </Card>
         </TabPane>
       </Tabs>

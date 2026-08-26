@@ -352,41 +352,45 @@ export default function Notifications() {
                 <span className="mobile-btn-text">添加渠道</span>
               </Button>
             </div>
-            <Table
-              columns={channelColumns}
-              data={channels}
-              rowKey="id"
-              pagination={{
-                current: channelPage,
-                pageSize: channelPageSize,
-                total: channelTotal,
-                showTotal: true,
-                onChange: (p, ps) => {
-                  setChannelPage(p)
-                  setChannelPageSize(ps)
-                },
-              }}
-              loading={loading}
-            />
+            <div className="table-responsive">
+              <Table
+                columns={channelColumns}
+                data={channels}
+                rowKey="id"
+                pagination={{
+                  current: channelPage,
+                  pageSize: channelPageSize,
+                  total: channelTotal,
+                  showTotal: true,
+                  onChange: (p, ps) => {
+                    setChannelPage(p)
+                    setChannelPageSize(ps)
+                  },
+                }}
+                loading={loading}
+              />
+            </div>
           </Card>
         </TabPane>
         <TabPane key="logs" title="发送日志">
           <Card>
-            <Table
-              columns={logColumns}
-              data={logs}
-              rowKey="id"
-              pagination={{
-                current: logPage,
-                pageSize: logPageSize,
-                total: logTotal,
-                showTotal: true,
-                onChange: (p, ps) => {
-                  setLogPage(p)
-                  setLogPageSize(ps)
-                },
-              }}
-            />
+            <div className="table-responsive">
+              <Table
+                columns={logColumns}
+                data={logs}
+                rowKey="id"
+                pagination={{
+                  current: logPage,
+                  pageSize: logPageSize,
+                  total: logTotal,
+                  showTotal: true,
+                  onChange: (p, ps) => {
+                    setLogPage(p)
+                    setLogPageSize(ps)
+                  },
+                }}
+              />
+            </div>
           </Card>
         </TabPane>
         <TabPane key="push" title="PWA 推送">
@@ -423,27 +427,29 @@ export default function Notifications() {
                   {isPWA ? <Tag color="green">已安装为应用</Tag> : <Tag color="orange">浏览器访问</Tag>}
                 </Text>
               </Space>
-              <Table
-                columns={[
-                  { title: '浏览器', dataIndex: 'user_agent', ellipsis: true },
-                  { title: '订阅时间', dataIndex: 'created_at', width: 180, render: (t: string) => t?.slice(0, 19).replace('T', ' ') },
-                  {
-                    title: '操作',
-                    width: 100,
-                    render: (_: any, record: PushSub) => (
-                      <Popconfirm title="取消此设备订阅？" onOk={() => api.post('/push/unsubscribe', { endpoint: record.endpoint }).then(() => fetchSubscriptions())}>
-                        <Button type="text" status="danger" size="small">
-                          <span className="mobile-btn-text">删除</span>
-                        </Button>
-                      </Popconfirm>
-                    ),
-                  },
-                ]}
-                data={subs}
-                rowKey="id"
-                loading={subLoading}
-                pagination={false}
-              />
+              <div className="table-responsive">
+                <Table
+                  columns={[
+                    { title: '浏览器', dataIndex: 'user_agent', ellipsis: true },
+                    { title: '订阅时间', dataIndex: 'created_at', width: 180, render: (t: string) => t?.slice(0, 19).replace('T', ' ') },
+                    {
+                      title: '操作',
+                      width: 100,
+                      render: (_: any, record: PushSub) => (
+                        <Popconfirm title="取消此设备订阅？" onOk={() => api.post('/push/unsubscribe', { endpoint: record.endpoint }).then(() => fetchSubscriptions())}>
+                          <Button type="text" status="danger" size="small">
+                            <span className="mobile-btn-text">删除</span>
+                          </Button>
+                        </Popconfirm>
+                      ),
+                    },
+                  ]}
+                  data={subs}
+                  rowKey="id"
+                  loading={subLoading}
+                  pagination={false}
+                />
+              </div>
             </Space>
           </Card>
         </TabPane>

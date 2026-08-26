@@ -5,6 +5,8 @@ data/
 frontend/node_modules
 frontend/dist
 frontend/.vite
+backend/.vite
+backend/node_modules
 
 # Build
 backend/ksm-dns
@@ -30,3 +32,4 @@ Thumbs.db
 .plan
 PLAN.md
 skills-lock.json
+backend/package-lock.json

@@ -173,7 +173,8 @@ func main() {
 			admin.PUT("/platforms/:id", dnsHandler.UpdatePlatform)
 			admin.DELETE("/platforms/:id", dnsHandler.DeletePlatform)
 			admin.POST("/platforms/:id/sync", dnsHandler.SyncDomains)
-			admin.DELETE("/domains/:id", dnsHandler.DeleteDomain)
+				admin.POST("/platforms/sync-all", dnsHandler.SyncAllDomains)
+				admin.DELETE("/domains/:id", dnsHandler.DeleteDomain)
 			admin.POST("/domains/:id/sync-records", dnsHandler.SyncRecords)
 
 			// Notification Channels (contain secrets, can send arbitrary notifications)

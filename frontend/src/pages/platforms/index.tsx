@@ -18,6 +18,8 @@ import {
   IconSync,
   IconDelete,
   IconEdit,
+  IconSearch,
+  IconRefresh,
 } from '@arco-design/web-react/icon'
 import api from '@/api'
 import { providerLogo, providerLabel, providerColor } from '@/utils/provider'
@@ -38,24 +40,44 @@ export default function Platforms() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [keyword, setKeyword] = useState('')
+  const [syncing, setSyncing] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [editing, setEditing] = useState<Platform | null>(null)
   const [form] = Form.useForm()
 
   useEffect(() => {
     fetchPlatforms()
-  }, [page, pageSize])
+  }, [page, pageSize, keyword])
 
   const fetchPlatforms = async () => {
     setLoading(true)
     try {
-      const res = await api.get('/platforms', { params: { page, page_size: pageSize } })
+      const res = await api.get('/platforms', { params: { page, page_size: pageSize, keyword } })
       setPlatforms(res.data.data || [])
       setTotal(res.data.total || 0)
     } catch (e: any) {
       Message.error(e?.response?.data?.error || '加载平台失败')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleBatchSync = async () => {
+    setSyncing(true)
+    try {
+      const res = await api.post('/platforms/sync-all')
+      const errs = res.data.errors || []
+      if (errs.length > 0) {
+        Message.warning(`同步完成：新增 ${res.data.added} 个域名。${errs.length} 个平台失败：${errs.join('；')}`)
+      } else {
+        Message.success(`批量同步完成：新增 ${res.data.added} 个域名，共 ${res.data.total} 个（${res.data.platforms} 个平台）`)
+      }
+      fetchPlatforms()
+    } catch (e: any) {
+      Message.error(e?.response?.data?.error || '批量同步失败')
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -190,27 +212,45 @@ export default function Platforms() {
     <div>
       <Title heading={4} style={{ marginBottom: 16 }}>DNS 平台管理</Title>
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
-            添加平台
-          </Button>
+        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <Input
+            prefix={<IconSearch />}
+            placeholder="搜索平台"
+            style={{ width: 260 }}
+            value={keyword}
+            onChange={(v) => {
+              setKeyword(v)
+              setPage(1)
+            }}
+            allowClear
+          />
+          <Space>
+            <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
+              添加平台
+            </Button>
+            <Button icon={<IconRefresh />} onClick={handleBatchSync} loading={syncing}>
+              <span className="mobile-btn-text">批量同步</span>
+            </Button>
+          </Space>
         </div>
-        <Table
-          columns={columns}
-          data={platforms}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: page,
-            pageSize,
-            total,
-            showTotal: true,
-            onChange: (p, ps) => {
-              setPage(p)
-              setPageSize(ps)
-            },
-          }}
-        />
+        <div className="table-responsive">
+          <Table
+            columns={columns}
+            data={platforms}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              showTotal: true,
+              onChange: (p, ps) => {
+                setPage(p)
+                setPageSize(ps)
+              },
+            }}
+          />
+        </div>
       </Card>
 
       <Modal

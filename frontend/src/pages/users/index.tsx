@@ -250,22 +250,24 @@ export default function Users() {
             <span className="mobile-btn-text">添加子用户</span>
           </Button>
         </div>
-        <Table
-          columns={columns}
-          data={users}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: page,
-            pageSize,
-            total,
-            showTotal: true,
-            onChange: (p, ps) => {
-              setPage(p)
-              setPageSize(ps)
-            },
-          }}
-        />
+        <div className="table-responsive">
+          <Table
+            columns={columns}
+            data={users}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              showTotal: true,
+              onChange: (p, ps) => {
+                setPage(p)
+                setPageSize(ps)
+              },
+            }}
+          />
+        </div>
       </Card>
 
       <Modal

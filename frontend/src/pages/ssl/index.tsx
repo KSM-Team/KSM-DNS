@@ -416,22 +416,24 @@ export default function SSL() {
             </Button>
           </Space>
         </div>
-        <Table
-          columns={columns}
-          data={certificates}
-          rowKey="id"
-          pagination={{
-            current: certPage,
-            pageSize: certPageSize,
-            total: certTotal,
-            showTotal: true,
-            onChange: (p, ps) => {
-              setCertPage(p)
-              setCertPageSize(ps)
-            },
-          }}
-          loading={loading}
-        />
+        <div className="table-responsive">
+          <Table
+            columns={columns}
+            data={certificates}
+            rowKey="id"
+            pagination={{
+              current: certPage,
+              pageSize: certPageSize,
+              total: certTotal,
+              showTotal: true,
+              onChange: (p, ps) => {
+                setCertPage(p)
+                setCertPageSize(ps)
+              },
+            }}
+            loading={loading}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -497,21 +499,23 @@ export default function SSL() {
             <span className="mobile-btn-text">添加部署目标</span>
           </Button>
         </div>
-        <Table
-          columns={targetColumns}
-          data={targets}
-          rowKey="id"
-          pagination={{
-            current: targetPage,
-            pageSize: targetPageSize,
-            total: targetTotal,
-            showTotal: true,
-            onChange: (p, ps) => {
-              setTargetPage(p)
-              setTargetPageSize(ps)
-            },
-          }}
-        />
+        <div className="table-responsive">
+          <Table
+            columns={targetColumns}
+            data={targets}
+            rowKey="id"
+            pagination={{
+              current: targetPage,
+              pageSize: targetPageSize,
+              total: targetTotal,
+              showTotal: true,
+              onChange: (p, ps) => {
+                setTargetPage(p)
+                setTargetPageSize(ps)
+              },
+            }}
+          />
+        </div>
       </Modal>
 
       <Modal
