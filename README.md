@@ -35,7 +35,7 @@
 
 ## ✨ 功能特性
 
-- **多平台 DNS 管理** — 支持 Cloudflare、阿里云 DNS、腾讯云 DNSPod、Namesilo、Spaceship
+- **多平台 DNS 管理** — 支持 Cloudflare、阿里云 DNS、腾讯云 DNSPod、Namesilo、Spaceship、Porkbun
 - **DNS 记录管理** — 增删改查 A/AAAA/CNAME/MX/TXT/NS/SRV/CAA 记录，支持批量同步
 - **智能故障转移** — 健康检查（TCP/HTTP/HTTPS/Ping）+ 自动切换备份记录
 - **定时任务调度** — Cron 表达式定时修改/启用/暂停 DNS 记录
@@ -158,7 +158,7 @@ KSM-DNS/
 │   └── vite.config.ts
 ├── Dockerfile
 ├── docker-compose.yml
-├── cn_readme.md
+├── README.md
 └── us_readme.md
 ```
 

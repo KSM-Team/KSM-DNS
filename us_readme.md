@@ -35,7 +35,7 @@
 
 ## ✨ Features
 
-- **Multi-Platform DNS** — Cloudflare, Alibaba Cloud DNS, Tencent DNSPod, Namesilo, Spaceship
+- **Multi-Platform DNS** — Cloudflare, Alibaba Cloud DNS, Tencent DNSPod, Namesilo, Spaceship, Porkbun
 - **DNS Record Management** — Full CRUD for A/AAAA/CNAME/MX/TXT/NS/SRV/CAA records with batch sync
 - **Intelligent Failover** — Health checks (TCP/HTTP/HTTPS/Ping) + automatic backup record switching
 - **Scheduled Tasks** — Cron-based scheduling for record modification, enabling, pausing
@@ -154,7 +154,7 @@ KSM-DNS/
 │   └── vite.config.ts
 ├── Dockerfile
 ├── docker-compose.yml
-├── cn_readme.md
+├── README.md
 └── us_readme.md
 ```
 
