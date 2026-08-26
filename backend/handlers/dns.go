@@ -95,9 +95,9 @@ func (h *DNSHandler) CreatePlatform(c *gin.Context) {
 	}
 
 	switch req.Type {
-	case "cloudflare", "spaceship", "namesilo", "aliyun", "tencent":
+	case "cloudflare", "spaceship", "namesilo", "aliyun", "tencent", "porkbun":
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的平台类型，仅支持 cloudflare、spaceship、namesilo、aliyun 和 tencent"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的平台类型，仅支持 cloudflare、spaceship、namesilo、aliyun、tencent 和 porkbun"})
 		return
 	}
 

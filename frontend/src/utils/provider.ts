@@ -6,6 +6,7 @@ import aliyunLogo from '@/assets/logos/aliyun.svg'
 import tencentLogo from '@/assets/logos/tencent.svg'
 import zerosslLogo from '@/assets/logos/zerossl.svg'
 import googleLogo from '@/assets/logos/google.svg'
+import porkbunLogo from '@/assets/logos/porkbun.svg'
 
 export type ProviderType =
   | 'cloudflare'
@@ -16,6 +17,7 @@ export type ProviderType =
   | 'tencent'
   | 'zerossl'
   | 'google'
+  | 'porkbun'
 
 export const providerLogo: Record<string, string> = {
   cloudflare: cloudflareLogo,
@@ -26,6 +28,7 @@ export const providerLogo: Record<string, string> = {
   tencent: tencentLogo,
   zerossl: zerosslLogo,
   google: googleLogo,
+  porkbun: porkbunLogo,
 }
 
 export const providerShort: Record<string, string> = {
@@ -37,6 +40,7 @@ export const providerShort: Record<string, string> = {
   tencent: 'TC',
   zerossl: 'ZSSL',
   google: 'GTS',
+  porkbun: 'PB',
 }
 
 export const providerLabel: Record<string, string> = {
@@ -48,6 +52,7 @@ export const providerLabel: Record<string, string> = {
   tencent: '腾讯云',
   zerossl: 'ZeroSSL',
   google: 'Google Trust Services',
+  porkbun: 'Porkbun',
 }
 
 export const providerColor: Record<string, string> = {
@@ -59,4 +64,5 @@ export const providerColor: Record<string, string> = {
   tencent: '#006EFF',
   zerossl: '#00B67A',
   google: '#4285F4',
+  porkbun: '#E22D48',
 }

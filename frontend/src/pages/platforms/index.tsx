@@ -88,6 +88,9 @@ export default function Platforms() {
       } else if (values.type === 'tencent') {
         credentials.secret_id = values.secret_id
         credentials.secret_key = values.secret_key
+      } else if (values.type === 'porkbun') {
+        credentials.api_key = values.api_key
+        credentials.secret_key = values.secret_key
       }
 
       if (editing) {
@@ -227,6 +230,7 @@ export default function Platforms() {
               <Select.Option value="namesilo">Namesilo</Select.Option>
               <Select.Option value="aliyun">阿里云 (Aliyun)</Select.Option>
               <Select.Option value="tencent">腾讯云 (Tencent)</Select.Option>
+              <Select.Option value="porkbun">Porkbun</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item shouldUpdate noStyle>
@@ -277,6 +281,18 @@ export default function Platforms() {
                     </Form.Item>
                     <Form.Item label="SecretKey" field="secret_key" rules={[{ required: true, message: '请输入 SecretKey' }]}>
                       <Input.Password placeholder="腾讯云 SecretKey" />
+                    </Form.Item>
+                  </>
+                )
+              }
+              if (values.type === 'porkbun') {
+                return (
+                  <>
+                    <Form.Item label="API Key" field="api_key" rules={[{ required: true, message: '请输入 API Key' }]}>
+                      <Input.Password placeholder="Porkbun API Key" />
+                    </Form.Item>
+                    <Form.Item label="Secret Key" field="secret_key" rules={[{ required: true, message: '请输入 Secret Key' }]}>
+                      <Input.Password placeholder="Porkbun Secret Key" />
                     </Form.Item>
                   </>
                 )

@@ -6,6 +6,18 @@ import (
 	"ksm-dns/models"
 )
 
+// parseInt converts a string to int, returning 0 on failure.
+func parseInt(s string) int {
+	var n int
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return 0
+		}
+		n = n*10 + int(c-'0')
+	}
+	return n
+}
+
 // ProviderFor creates a DNS Provider from a platform record by parsing its
 // stored credentials JSON. It is the single shared implementation used by the
 // monitor, scheduler, SSL service, and DNS handlers.

@@ -31,6 +31,8 @@ func NewProvider(platform models.DNSPlatform, credentials map[string]string) (Pr
 		return NewAliyun(credentials)
 	case "tencent":
 		return NewTencent(credentials)
+	case "porkbun":
+		return NewPorkbun(credentials)
 	default:
 		return nil, ErrUnsupportedPlatform
 	}

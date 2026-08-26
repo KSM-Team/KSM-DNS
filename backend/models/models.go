@@ -40,7 +40,7 @@ type Setting struct {
 type DNSPlatform struct {
 	ID          uint           `gorm:"primarykey" json:"id"`
 	Name        string         `gorm:"size:100" json:"name"`
-	Type        string         `gorm:"size:50" json:"type"` // cloudflare, spaceship, namesilo, aliyun, tencent
+	Type        string         `gorm:"size:50" json:"type"` // cloudflare, spaceship, namesilo, aliyun, tencent, porkbun
 	Credentials string         `gorm:"type:text" json:"-"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
