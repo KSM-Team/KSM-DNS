@@ -239,11 +239,13 @@ export default function Scheduler() {
     {
       title: '域名',
       dataIndex: 'domain_info',
+      className: 'col-hide-mobile',
       render: (d: Domain) => d?.domain || '-',
     },
     {
       title: '记录',
       dataIndex: 'record_info',
+      className: 'col-hide-mobile',
       render: (r: DNSRecord) => (r ? `${r.name} (${r.type})` : '-'),
     },
     {
@@ -264,6 +266,7 @@ export default function Scheduler() {
       title: '操作',
       dataIndex: 'action_type',
       width: 100,
+      className: 'col-hide-mobile',
       render: (a: string) => {
         const m = actionTypeMap[a]
         return m ? <Tag color={m.color}>{m.label}</Tag> : a
@@ -273,6 +276,7 @@ export default function Scheduler() {
       title: '启用',
       dataIndex: 'enabled',
       width: 70,
+      className: 'col-hide-mobile',
       render: (v: boolean) => <Tag color={v ? 'green' : 'gray'}>{v ? '是' : '否'}</Tag>,
     },
     {
@@ -287,14 +291,14 @@ export default function Scheduler() {
       render: (_: any, record: Task) => (
         <Space>
           <Button type="text" icon={<IconPlayArrow />} onClick={() => handleRunNow(record.id)} size="small">
-            立即执行
+            <span className="mobile-btn-text">立即执行</span>
           </Button>
           <Button type="text" icon={<IconEdit />} onClick={() => openEdit(record)} size="small">
-            编辑
+            <span className="mobile-btn-text">编辑</span>
           </Button>
           <Popconfirm title="确定删除此任务？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>
@@ -322,10 +326,10 @@ export default function Scheduler() {
             <div style={{ marginBottom: 16 }}>
               <Space>
                 <Button type="primary" icon={<IconPlus />} onClick={openCreate}>
-                  添加任务
+                  <span className="mobile-btn-text">添加任务</span>
                 </Button>
                 <Button icon={<IconRefresh />} onClick={fetchTasks}>
-                  刷新
+                  <span className="mobile-btn-text">刷新</span>
                 </Button>
               </Space>
             </div>

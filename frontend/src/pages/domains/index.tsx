@@ -108,6 +108,7 @@ export default function Domains() {
       title: '类型',
       dataIndex: 'platform',
       width: 120,
+      className: 'col-hide-mobile',
       render: (p: Platform) => {
         const type = p?.type || ''
         return type ? (
@@ -121,12 +122,14 @@ export default function Domains() {
       title: '服务商',
       dataIndex: 'platform',
       width: 140,
+      className: 'col-hide-mobile',
       render: (p: Platform) => p?.name || '-',
     },
     {
       title: '状态',
       dataIndex: 'status',
       width: 90,
+      className: 'col-hide-mobile',
       render: (s: string) => <Tag color={s === 'active' ? 'green' : 'gray'}>{s}</Tag>,
     },
     {
@@ -140,14 +143,14 @@ export default function Domains() {
             onClick={() => navigate(`/domains/${record.id}/records`)}
             size="small"
           >
-            解析管理
+            <span className="mobile-btn-text">解析管理</span>
           </Button>
           <Button type="text" icon={<IconSync />} onClick={() => handleSyncRecords(record.id)} size="small">
-            同步
+            <span className="mobile-btn-text">同步</span>
           </Button>
           <Popconfirm title="确定删除此域名？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>

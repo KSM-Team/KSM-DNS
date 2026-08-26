@@ -255,11 +255,13 @@ export default function Failover() {
     {
       title: '域名',
       dataIndex: 'domain_info',
+      className: 'col-hide-mobile',
       render: (d: Domain) => d?.domain || '-',
     },
     {
       title: '记录',
       dataIndex: 'record_info',
+      className: 'col-hide-mobile',
       render: (r: DNSRecord) => (r ? `${r.name} (${r.type})` : '-'),
     },
     {
@@ -285,11 +287,13 @@ export default function Failover() {
       title: '失败次数',
       dataIndex: 'fail_count',
       width: 80,
+      className: 'col-hide-mobile',
     },
     {
       title: '启用',
       dataIndex: 'enabled',
       width: 70,
+      className: 'col-hide-mobile',
       render: (v: boolean) => <Tag color={v ? 'green' : 'gray'}>{v ? '是' : '否'}</Tag>,
     },
     {
@@ -299,19 +303,19 @@ export default function Failover() {
         <Space>
           {record.status === 'triggered' ? (
             <Button type="text" icon={<IconUndo />} onClick={() => handleRecover(record.id)} size="small">
-              恢复
+              <span className="mobile-btn-text">恢复</span>
             </Button>
           ) : (
             <Button type="text" icon={<IconThunderbolt />} onClick={() => handleTrigger(record.id)} size="small">
-              触发
+              <span className="mobile-btn-text">触发</span>
             </Button>
           )}
           <Button type="text" icon={<IconEdit />} onClick={() => openEdit(record)} size="small">
-            编辑
+            <span className="mobile-btn-text">编辑</span>
           </Button>
           <Popconfirm title="确定删除此规则？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>
@@ -341,10 +345,10 @@ export default function Failover() {
             <div style={{ marginBottom: 16 }}>
               <Space>
                 <Button type="primary" icon={<IconPlus />} onClick={openCreate}>
-                  添加规则
+                  <span className="mobile-btn-text">添加规则</span>
                 </Button>
                 <Button icon={<IconRefresh />} onClick={fetchRules}>
-                  刷新
+                  <span className="mobile-btn-text">刷新</span>
                 </Button>
               </Space>
             </div>

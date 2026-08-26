@@ -147,6 +147,7 @@ export default function Platforms() {
       title: '类型',
       dataIndex: 'type',
       width: 130,
+      className: 'col-hide-mobile',
       render: (type: string) => (
         <Tag color={providerColor[type]}>{providerLabel[type] || type}</Tag>
       ),
@@ -161,6 +162,7 @@ export default function Platforms() {
       title: '创建时间',
       dataIndex: 'created_at',
       width: 120,
+      className: 'col-hide-mobile',
       render: (t: string) => t?.slice(0, 10),
     },
     {
@@ -169,14 +171,14 @@ export default function Platforms() {
       render: (_: any, record: Platform) => (
         <Space>
           <Button type="text" icon={<IconSync />} onClick={() => handleSync(record.id)} size="small">
-            同步域名
+            <span className="mobile-btn-text">同步域名</span>
           </Button>
           <Button type="text" icon={<IconEdit />} onClick={() => handleEdit(record)} size="small">
-            编辑
+            <span className="mobile-btn-text">编辑</span>
           </Button>
           <Popconfirm title="确定删除此平台？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>

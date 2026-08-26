@@ -7,3 +7,63 @@ body {
 #root {
   height: 100vh;
 }
+
+/* ========== Mobile responsive (< 768px) ========== */
+@media (max-width: 767px) {
+  /* Hide button text on mobile — only icons remain visible */
+  .mobile-btn-text {
+    display: none;
+  }
+
+  /* Hide less important table columns on mobile */
+  .col-hide-mobile {
+    display: none !important;
+  }
+
+  /* Stack filter/search bars vertically */
+  .filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .filter-bar > .arco-input-wrapper,
+  .filter-bar > .arco-select {
+    width: 100% !important;
+  }
+
+  .filter-bar > .arco-space {
+    flex-wrap: wrap;
+  }
+
+  /* Table horizontal scroll wrapper */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce card padding on mobile */
+  .arco-card-body {
+    padding: 12px;
+  }
+
+  /* Tabs — reduce padding */
+  .arco-tabs-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Action column: compact buttons on mobile */
+  .arco-table td:last-child .arco-space {
+    gap: 2px !important;
+  }
+
+  .arco-table td:last-child .arco-btn {
+    padding: 0 4px;
+    min-width: auto;
+  }
+
+  /* Hide pagination text on mobile, keep only page buttons */
+  .arco-pagination-text {
+    display: none;
+  }
+}

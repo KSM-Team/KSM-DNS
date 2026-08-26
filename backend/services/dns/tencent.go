@@ -148,14 +148,25 @@ func tencentStringSlice(items []interface{}, key string) []string {
 }
 
 func (t *Tencent) ListDomains() ([]string, error) {
-	data, err := t.responseData("DescribeDomainList", map[string]interface{}{
-		"Limit": 3000,
-	})
-	if err != nil {
-		return nil, err
+	var allNames []string
+	offset := 0
+	limit := 3000
+	for {
+		data, err := t.responseData("DescribeDomainList", map[string]interface{}{
+			"Limit":  limit,
+			"Offset": offset,
+		})
+		if err != nil {
+			return nil, err
+		}
+		items, _ := data["DomainList"].([]interface{})
+		allNames = append(allNames, tencentStringSlice(items, "Name")...)
+		if len(items) < limit {
+			break
+		}
+		offset += limit
 	}
-	items, _ := data["DomainList"].([]interface{})
-	return tencentStringSlice(items, "Name"), nil
+	return allNames, nil
 }
 
 func (t *Tencent) ListRecords(domain string) ([]Record, error) {

@@ -197,7 +197,7 @@ export default function Users() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 60 },
+    { title: 'ID', dataIndex: 'id', width: 60, className: 'col-hide-mobile' },
     { title: '用户名', dataIndex: 'username' },
     {
       title: '角色',
@@ -213,6 +213,7 @@ export default function Users() {
       title: '创建时间',
       dataIndex: 'created_at',
       width: 180,
+      className: 'col-hide-mobile',
       render: (t: string) => (t ? t.slice(0, 19).replace('T', ' ') : '-'),
     },
     {
@@ -221,16 +222,16 @@ export default function Users() {
       render: (_: any, record: User) => (
         <Space>
           <Button type="text" icon={<IconSafe />} onClick={() => openPermissions(record)} size="small">
-            域名权限
+            <span className="mobile-btn-text">域名权限</span>
           </Button>
           {record.role !== 'admin' && (
             <>
               <Button type="text" icon={<IconLock />} onClick={() => openReset(record)} size="small">
-                重置密码
+                <span className="mobile-btn-text">重置密码</span>
               </Button>
               <Popconfirm title="确定删除此子用户？" onOk={() => handleDelete(record.id)}>
                 <Button type="text" status="danger" icon={<IconDelete />} size="small">
-                  删除
+                  <span className="mobile-btn-text">删除</span>
                 </Button>
               </Popconfirm>
             </>
@@ -246,7 +247,7 @@ export default function Users() {
       <Card>
         <div style={{ marginBottom: 16 }}>
           <Button type="primary" icon={<IconPlus />} onClick={openCreate}>
-            添加子用户
+            <span className="mobile-btn-text">添加子用户</span>
           </Button>
         </div>
         <Table

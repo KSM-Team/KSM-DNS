@@ -84,17 +84,26 @@ type spCreateResponse struct {
 }
 
 func (s *Spaceship) ListDomains() ([]string, error) {
-	data, err := s.doRequest("GET", "/domains", nil)
-	if err != nil {
-		return nil, err
-	}
-	var resp spDomainsResponse
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return nil, err
-	}
-	domains := make([]string, 0, len(resp.Items))
-	for _, d := range resp.Items {
-		domains = append(domains, d.Name)
+	var domains []string
+	offset := 0
+	limit := 100
+	for {
+		path := fmt.Sprintf("/domains?limit=%d&offset=%d", limit, offset)
+		data, err := s.doRequest("GET", path, nil)
+		if err != nil {
+			return nil, err
+		}
+		var resp spDomainsResponse
+		if err := json.Unmarshal(data, &resp); err != nil {
+			return nil, err
+		}
+		for _, d := range resp.Items {
+			domains = append(domains, d.Name)
+		}
+		if len(resp.Items) < limit {
+			break
+		}
+		offset += limit
 	}
 	return domains, nil
 }

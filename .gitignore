@@ -4,6 +4,7 @@ data/
 # Node
 frontend/node_modules
 frontend/dist
+frontend/.vite
 
 # Build
 backend/ksm-dns

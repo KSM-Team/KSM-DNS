@@ -131,22 +131,33 @@ func aliyunStringSlice(m map[string]interface{}, key string) []string {
 }
 
 func (a *Aliyun) ListDomains() ([]string, error) {
-	resp, err := a.call("DescribeDomains", url.Values{"PageSize": {"100"}})
-	if err != nil {
-		return nil, err
-	}
-	domainsObj, _ := resp["Domains"].(map[string]interface{})
-	if domainsObj == nil {
-		return nil, nil
-	}
-	domains, _ := domainsObj["Domain"].([]interface{})
-	names := make([]string, 0, len(domains))
-	for _, d := range domains {
-		if dm, ok := d.(map[string]interface{}); ok {
-			if name, ok := dm["DomainName"].(string); ok && name != "" {
-				names = append(names, name)
+	var names []string
+	pageNumber := 1
+	for {
+		resp, err := a.call("DescribeDomains", url.Values{
+			"PageSize":   {"100"},
+			"PageNumber": {fmt.Sprintf("%d", pageNumber)},
+		})
+		if err != nil {
+			return nil, err
+		}
+		domainsObj, _ := resp["Domains"].(map[string]interface{})
+		if domainsObj == nil {
+			break
+		}
+		domains, _ := domainsObj["Domain"].([]interface{})
+		for _, d := range domains {
+			if dm, ok := d.(map[string]interface{}); ok {
+				if name, ok := dm["DomainName"].(string); ok && name != "" {
+					names = append(names, name)
+				}
 			}
 		}
+		totalCount := intValue(resp["TotalCount"])
+		if pageNumber*100 >= totalCount {
+			break
+		}
+		pageNumber++
 	}
 	return names, nil
 }

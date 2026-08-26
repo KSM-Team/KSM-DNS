@@ -108,8 +108,8 @@ export default function Topology() {
       <SankeyChart
         spec={{
           type: 'sankey',
-          data: [{ id: 'data', values: links }],
-          categoryField: 'name',
+          data: [{ links }] as any,
+          categoryField: 'key',
           valueField: 'value',
           sourceField: 'source',
           targetField: 'target',
@@ -136,7 +136,7 @@ export default function Topology() {
             展示「域名 → 服务商 → SSL 证书」的对应关系，证书节点含到期时间。
           </span>
           <Button icon={<IconRefresh />} onClick={fetchData} loading={loading}>
-            刷新
+            <span className="mobile-btn-text">刷新</span>
           </Button>
         </div>
 

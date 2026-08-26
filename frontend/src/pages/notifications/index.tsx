@@ -296,6 +296,7 @@ export default function Notifications() {
     {
       title: '类型',
       dataIndex: 'type',
+      className: 'col-hide-mobile',
       render: (t: string) => (
         <Tag color={t === 'email' ? 'blue' : t === 'telegram' ? 'purple' : 'green'}>
           {t === 'email' ? '邮件' : t === 'telegram' ? 'Telegram' : 'Web Push'}
@@ -312,14 +313,14 @@ export default function Notifications() {
       render: (_: any, record: Channel) => (
         <Space>
           <Button type="text" icon={<IconSend />} onClick={() => handleTest(record.id)} size="small">
-            测试
+            <span className="mobile-btn-text">测试</span>
           </Button>
           <Button type="text" icon={<IconEdit />} onClick={() => openEdit(record)} size="small">
-            编辑
+            <span className="mobile-btn-text">编辑</span>
           </Button>
           <Popconfirm title="确定删除此渠道？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>
@@ -348,7 +349,7 @@ export default function Notifications() {
           <Card>
             <div style={{ marginBottom: 16 }}>
               <Button type="primary" icon={<IconPlus />} onClick={openCreate}>
-                添加渠道
+                <span className="mobile-btn-text">添加渠道</span>
               </Button>
             </div>
             <Table
@@ -404,11 +405,11 @@ export default function Notifications() {
               />
               <Space wrap>
                 <Button type="primary" icon={<IconNotification />} onClick={handleSubscribe}>
-                  订阅推送
+                  <span className="mobile-btn-text">订阅推送</span>
                 </Button>
-                <Button onClick={handleUnsubscribe}>取消订阅</Button>
+                <Button onClick={handleUnsubscribe}><span className="mobile-btn-text">取消订阅</span></Button>
                 <Button type="outline" icon={<IconSend />} onClick={handleTestPush}>
-                  发送测试推送
+                  <span className="mobile-btn-text">发送测试推送</span>
                 </Button>
               </Space>
               <Space wrap size="large">
@@ -432,7 +433,7 @@ export default function Notifications() {
                     render: (_: any, record: PushSub) => (
                       <Popconfirm title="取消此设备订阅？" onOk={() => api.post('/push/unsubscribe', { endpoint: record.endpoint }).then(() => fetchSubscriptions())}>
                         <Button type="text" status="danger" size="small">
-                          删除
+                          <span className="mobile-btn-text">删除</span>
                         </Button>
                       </Popconfirm>
                     ),

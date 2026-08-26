@@ -64,6 +64,12 @@ type cfZoneResponse struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"result"`
+	ResultInfo struct {
+		Page       int `json:"page"`
+		PerPage    int `json:"per_page"`
+		TotalPages int `json:"total_pages"`
+		TotalCount int `json:"total_count"`
+	} `json:"result_info"`
 	Success bool `json:"success"`
 }
 
@@ -102,18 +108,30 @@ func (c *Cloudflare) getZoneID(domain string) (string, error) {
 }
 
 func (c *Cloudflare) ListDomains() ([]string, error) {
-	data, err := c.doRequest("GET", "/zones?per_page=50", nil)
-	if err != nil {
-		return nil, err
+	var domains []string
+	page := 1
+	for {
+		path := fmt.Sprintf("/zones?per_page=50&page=%d", page)
+		data, err := c.doRequest("GET", path, nil)
+		if err != nil {
+			return nil, err
+		}
+		var resp cfZoneResponse
+		if err := json.Unmarshal(data, &resp); err != nil {
+			return nil, err
+		}
+		// Debug: print raw page info
+		fmt.Printf("[Cloudflare] page=%d total_pages=%d total_count=%d count=%d success=%v\n",
+			page, resp.ResultInfo.TotalPages, resp.ResultInfo.TotalCount, len(resp.Result), resp.Success)
+		for _, z := range resp.Result {
+			domains = append(domains, z.Name)
+		}
+		if page >= resp.ResultInfo.TotalPages {
+			break
+		}
+		page++
 	}
-	var resp cfZoneResponse
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return nil, err
-	}
-	domains := make([]string, 0, len(resp.Result))
-	for _, z := range resp.Result {
-		domains = append(domains, z.Name)
-	}
+	fmt.Printf("[Cloudflare] ListDomains returned %d domains: %v\n", len(domains), domains)
 	return domains, nil
 }
 

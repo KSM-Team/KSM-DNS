@@ -183,11 +183,12 @@ export default function DomainRecords() {
       render: (t: string) => <Tag color="arcoblue">{t}</Tag>,
     },
     { title: '值', dataIndex: 'value', ellipsis: true },
-    { title: 'TTL', dataIndex: 'ttl', width: 80 },
+    { title: 'TTL', dataIndex: 'ttl', width: 80, className: 'col-hide-mobile' },
     {
       title: '代理',
       dataIndex: 'proxied',
       width: 70,
+      className: 'col-hide-mobile',
       render: (v: boolean) => (v ? <Tag color="orange">是</Tag> : <Tag>否</Tag>),
     },
     {
@@ -208,7 +209,7 @@ export default function DomainRecords() {
     <div>
       <Space style={{ marginBottom: 12 }}>
         <Button icon={<IconLeft />} onClick={() => navigate('/domains')}>
-          返回
+          <span className="mobile-btn-text">返回</span>
         </Button>
         <Title heading={4} style={{ margin: 0 }}>DNS 解析管理</Title>
       </Space>
@@ -223,7 +224,7 @@ export default function DomainRecords() {
           <span style={{ color: 'var(--color-text-3)' }}>{domain?.platform?.name}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div className="filter-bar" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
           <Input
             prefix={<IconSearch />}
             placeholder="搜索记录名称或值"
@@ -251,10 +252,10 @@ export default function DomainRecords() {
           </Select>
           <Space>
             <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
-              添加记录
+              <span className="mobile-btn-text">添加记录</span>
             </Button>
             <Button icon={<IconSync />} onClick={handleSync}>
-              同步记录
+              <span className="mobile-btn-text">同步记录</span>
             </Button>
             <Popconfirm title={`确定批量删除选中的 ${selectedKeys.length} 条记录？`} onOk={handleBatchDelete}>
               <Button
@@ -262,7 +263,7 @@ export default function DomainRecords() {
                 icon={<IconDelete />}
                 disabled={!selectedKeys.length}
               >
-                批量删除 ({selectedKeys.length})
+                <span className="mobile-btn-text">批量删除 ({selectedKeys.length})</span>
               </Button>
             </Popconfirm>
           </Space>

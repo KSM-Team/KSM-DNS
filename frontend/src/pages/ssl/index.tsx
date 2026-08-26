@@ -292,6 +292,7 @@ export default function SSL() {
     {
       title: 'DNS 域名',
       dataIndex: 'domain_info',
+      className: 'col-hide-mobile',
       render: (d: Domain) => d?.domain || '-',
     },
     {
@@ -307,6 +308,7 @@ export default function SSL() {
       title: '签发机构',
       dataIndex: 'provider',
       width: 160,
+      className: 'col-hide-mobile',
       render: (p: string) => (
         <Tag color={providerColor[p]}>{providerLabel[p] || p}</Tag>
       ),
@@ -315,6 +317,7 @@ export default function SSL() {
       title: '签发时间',
       dataIndex: 'issued_at',
       width: 160,
+      className: 'col-hide-mobile',
       render: (t: string) => formatTime(t),
     },
     {
@@ -327,6 +330,7 @@ export default function SSL() {
       title: '自动续期',
       dataIndex: 'auto_renew',
       width: 90,
+      className: 'col-hide-mobile',
       render: (v: boolean) => <Tag color={v ? 'green' : 'gray'}>{v ? '是' : '否'}</Tag>,
     },
     {
@@ -335,20 +339,20 @@ export default function SSL() {
       render: (_: any, record: Certificate) => (
         <Space>
           <Button type="text" icon={<IconSend />} onClick={() => openDeploy(record)} size="small">
-            部署
+            <span className="mobile-btn-text">部署</span>
           </Button>
           <Button type="text" icon={<IconSync />} onClick={() => handleIssue(record.id)} size="small">
-            签发
+            <span className="mobile-btn-text">签发</span>
           </Button>
           <Button type="text" icon={<IconDownload />} onClick={() => downloadFile(record.id, 'cert')} size="small">
-            证书
+            <span className="mobile-btn-text">证书</span>
           </Button>
           <Button type="text" icon={<IconDownload />} onClick={() => downloadFile(record.id, 'key')} size="small">
-            私钥
+            <span className="mobile-btn-text">私钥</span>
           </Button>
           <Popconfirm title="确定删除此证书？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>
@@ -359,8 +363,8 @@ export default function SSL() {
   const targetColumns = [
     { title: '名称', dataIndex: 'name' },
     { title: '主机', dataIndex: 'host' },
-    { title: '端口', dataIndex: 'port', width: 70 },
-    { title: '用户', dataIndex: 'username', width: 100 },
+    { title: '端口', dataIndex: 'port', width: 70, className: 'col-hide-mobile' },
+    { title: '用户', dataIndex: 'username', width: 100, className: 'col-hide-mobile' },
     {
       title: '状态',
       dataIndex: 'status',
@@ -374,6 +378,7 @@ export default function SSL() {
       title: '最近部署',
       dataIndex: 'last_deploy_at',
       width: 160,
+      className: 'col-hide-mobile',
       render: (t: string) => formatTime(t),
     },
     {
@@ -382,14 +387,14 @@ export default function SSL() {
       render: (_: any, record: DeployTarget) => (
         <Space>
           <Button type="text" icon={<IconSend />} onClick={() => handleDeploy(record.id)} size="small">
-            部署
+            <span className="mobile-btn-text">部署</span>
           </Button>
           <Button type="text" icon={<IconEdit />} onClick={() => openTargetEdit(record)} size="small">
-            编辑
+            <span className="mobile-btn-text">编辑</span>
           </Button>
           <Popconfirm title="确定删除此部署目标？" onOk={() => handleTargetDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
-              删除
+              <span className="mobile-btn-text">删除</span>
             </Button>
           </Popconfirm>
         </Space>
@@ -404,10 +409,10 @@ export default function SSL() {
         <div style={{ marginBottom: 16 }}>
           <Space>
             <Button type="primary" icon={<IconPlus />} onClick={openCreate}>
-              申请证书
+              <span className="mobile-btn-text">申请证书</span>
             </Button>
             <Button icon={<IconRefresh />} onClick={fetchCertificates}>
-              刷新
+              <span className="mobile-btn-text">刷新</span>
             </Button>
           </Space>
         </div>
@@ -489,7 +494,7 @@ export default function SSL() {
       >
         <div style={{ marginBottom: 16 }}>
           <Button type="primary" icon={<IconPlus />} onClick={openTargetCreate}>
-            添加部署目标
+            <span className="mobile-btn-text">添加部署目标</span>
           </Button>
         </div>
         <Table
