@@ -168,6 +168,7 @@ export default function AppLayout() {
             />
           )}
           <Dropdown
+            trigger="click"
             droplist={
               <Menu onClickMenuItem={(key) => {
                 if (key === 'logout') handleLogout()
