@@ -11,7 +11,7 @@ import {
   Typography,
   Grid,
 } from '@arco-design/web-react'
-import { IconSwap, IconEye, IconCheck } from '@arco-design/web-react/icon'
+import { IconEye, IconCheck } from '@arco-design/web-react/icon'
 import api from '@/api'
 import { providerLogo, providerLabel, providerColor } from '@/utils/provider'
 
@@ -68,8 +68,6 @@ export default function DNSMigrate() {
   }, [])
 
   const srcDomains = domains.filter((d) => d.platform_id === srcPlatformId)
-  const srcPlatform = platforms.find((p) => p.id === srcPlatformId)
-  const tgtPlatform = platforms.find((p) => p.id === tgtPlatformId)
 
   const handlePreview = async () => {
     if (!srcPlatformId || !srcDomainId) {
@@ -281,7 +279,7 @@ export default function DNSMigrate() {
       {results.length > 0 && (
         <Card title={`迁移结果 (${results.filter((r) => !r.error).length}/${results.length} 成功)`}>
           <div className="table-responsive">
-            <Table columns={resultColumns} data={results} rowKey={(r: MigrateResult, i: number) => `${r.name}-${r.type}-${i}`} pagination={false} />
+            <Table columns={resultColumns} data={results} rowKey={(r: MigrateResult) => `${r.name}-${r.type}-${r.value}`} pagination={false} />
           </div>
         </Card>
       )}
