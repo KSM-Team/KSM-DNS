@@ -25,12 +25,7 @@ func Load() *Config {
 	// Resolve dataDir relative to the executable so the binary can be started
 	// from any working directory. Falls back to the original relative path when
 	// os.Executable() fails (e.g. in tests).
-	dataDir := filepath.Join("..", "data")
-	if d := os.Getenv("KSM_DATA_DIR"); d != "" {
-		dataDir = d
-	} else if exe, err := os.Executable(); err == nil {
-		dataDir = filepath.Join(filepath.Dir(exe), "..", "data")
-	}
+	dataDir := resolveDataDir()
 
 	jwtSecret := os.Getenv("KSM_JWT_SECRET")
 	if jwtSecret == "" {
@@ -44,12 +39,7 @@ func Load() *Config {
 
 	frontendDir := os.Getenv("KSM_FRONTEND_DIR")
 	if frontendDir == "" {
-		// Default: look for frontend/dist next to the backend directory.
-		if exe, err := os.Executable(); err == nil {
-			frontendDir = filepath.Join(filepath.Dir(exe), "..", "frontend", "dist")
-		} else {
-			frontendDir = filepath.Join("..", "frontend", "dist")
-		}
+		frontendDir = resolveFrontendDir()
 	}
 
 	Cfg = &Config{
@@ -62,6 +52,58 @@ func Load() *Config {
 		FrontendDir: frontendDir,
 	}
 	return Cfg
+}
+
+// resolveDataDir determines the data directory using the following precedence:
+// 1. KSM_DATA_DIR environment variable
+// 2. Relative to the current working directory (works with go run)
+// 3. Relative to the executable path (works with compiled binaries)
+// 4. Fallback to "../data"
+func resolveDataDir() string {
+	if d := os.Getenv("KSM_DATA_DIR"); d != "" {
+		return d
+	}
+	if wd, err := os.Getwd(); err == nil {
+		// Try ../data from working directory first (covers go run)
+		dir := filepath.Join(wd, "..", "data")
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return dir
+		}
+		// Try ./data from working directory
+		dir = filepath.Join(wd, "data")
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return dir
+		}
+	}
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Join(filepath.Dir(exe), "..", "data")
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return dir
+		}
+	}
+	return filepath.Join("..", "data")
+}
+
+// resolveFrontendDir determines the frontend directory using the same precedence
+// as resolveDataDir but looking for "frontend/dist" instead of "data".
+func resolveFrontendDir() string {
+	if wd, err := os.Getwd(); err == nil {
+		dir := filepath.Join(wd, "..", "frontend", "dist")
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return dir
+		}
+		dir = filepath.Join(wd, "frontend", "dist")
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return dir
+		}
+	}
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Join(filepath.Dir(exe), "..", "frontend", "dist")
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return dir
+		}
+	}
+	return filepath.Join("..", "frontend", "dist")
 }
 
 // loadOrCreateJWTSecret returns a stable JWT signing secret. If one was already

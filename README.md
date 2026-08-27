@@ -37,6 +37,8 @@
 
 - **多平台 DNS 管理** — 支持 Cloudflare、阿里云 DNS、腾讯云 DNSPod、Namesilo、Spaceship、Porkbun
 - **DNS 记录管理** — 增删改查 A/AAAA/CNAME/MX/TXT/NS/SRV/CAA 记录，支持批量同步
+- **DNS 一键迁移** — 跨账号、跨平台全量 DNS 解析无损搬迁
+- **域名到期查询** — 批量查询域名到期时间，支持自动续费开关
 - **智能故障转移** — 健康检查（TCP/HTTP/HTTPS/Ping）+ 自动切换备份记录
 - **定时任务调度** — Cron 表达式定时修改/启用/暂停 DNS 记录
 - **SSL 证书管理** — 基于 ACME 协议自动申请/续期 Let's Encrypt 证书
@@ -153,7 +155,17 @@ KSM-DNS/
 │   ├── src/
 │   │   ├── api/         # Axios 封装
 │   │   ├── components/  # 通用组件
-│   │   ├── pages/       # 页面组件
+│   │   ├── pages/
+│   │   │   ├── dashboard/   # 仪表盘
+│   │   │   ├── domains/     # 域名管理 / 到期查询 / 解析管理
+│   │   │   ├── migrate/     # DNS 迁移
+│   │   │   ├── platforms/   # DNS 平台管理
+│   │   │   ├── failover/    # 容灾切换
+│   │   │   ├── scheduler/   # 定时切换
+│   │   │   ├── ssl/         # SSL 证书
+│   │   │   ├── notifications/ # 通知管理
+│   │   │   ├── settings/    # 系统设置
+│   │   │   └── users/       # 子用户管理
 │   │   └── store/       # Zustand 状态管理
 │   └── vite.config.ts
 ├── Dockerfile

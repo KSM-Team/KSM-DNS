@@ -37,6 +37,8 @@
 
 - **Multi-Platform DNS** — Cloudflare, Alibaba Cloud DNS, Tencent DNSPod, Namesilo, Spaceship, Porkbun
 - **DNS Record Management** — Full CRUD for A/AAAA/CNAME/MX/TXT/NS/SRV/CAA records with batch sync
+- **One-Click DNS Migration** — Seamless cross-account, cross-platform DNS record migration
+- **Domain Expiry Query** — Batch query domain expiration dates with auto-renewal toggle
 - **Intelligent Failover** — Health checks (TCP/HTTP/HTTPS/Ping) + automatic backup record switching
 - **Scheduled Tasks** — Cron-based scheduling for record modification, enabling, pausing
 - **SSL Certificate Management** — ACME-based automatic issuance and renewal of Let's Encrypt certificates
@@ -149,7 +151,17 @@ KSM-DNS/
 │   ├── src/
 │   │   ├── api/         # Axios HTTP client
 │   │   ├── components/  # Shared components
-│   │   ├── pages/       # Page components
+│   │   ├── pages/
+│   │   │   ├── dashboard/   # Dashboard
+│   │   │   ├── domains/     # Domain / Expiry / Records
+│   │   │   ├── migrate/     # DNS Migration
+│   │   │   ├── platforms/   # DNS Platform Management
+│   │   │   ├── failover/    # Failover & Recovery
+│   │   │   ├── scheduler/   # Scheduled Tasks
+│   │   │   ├── ssl/         # SSL Certificates
+│   │   │   ├── notifications/ # Notification Management
+│   │   │   ├── settings/    # System Settings
+│   │   │   └── users/       # Sub-User Management
 │   │   └── store/       # Zustand state management
 │   └── vite.config.ts
 ├── Dockerfile

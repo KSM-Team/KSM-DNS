@@ -233,3 +233,24 @@ func (t *Tencent) DeleteRecord(domain string, recordID string) error {
 	})
 	return err
 }
+
+func (t *Tencent) GetDomainInfo(domain string) (*DomainInfo, error) {
+	data, err := t.responseData("DescribeDomain", map[string]interface{}{
+		"Domain": domain,
+	})
+	if err != nil {
+		return nil, err
+	}
+	info := &DomainInfo{
+		DomainName:         domain,
+		AutoRenewSupported: false, // Tencent DNSPod API doesn't expose auto-renew management
+	}
+	if domainInfo, ok := data["DomainInfo"].(map[string]interface{}); ok {
+		if expireOn, ok := domainInfo["ExpireOn"].(string); ok && expireOn != "" {
+			if t, err := parseDate(expireOn, "2006-01-02"); err == nil {
+				info.ExpiryDate = &t
+			}
+		}
+	}
+	return info, nil
+}

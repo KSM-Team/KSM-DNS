@@ -217,3 +217,32 @@ func (p *Porkbun) DeleteRecord(domain string, recordID string) error {
 	_, err := p.doRequest("/dns/delete/"+domain+"/"+recordID, nil)
 	return err
 }
+
+// pbDomainInfoResponse is the response from /domain/getInfo/:domain.
+type pbDomainInfoResponse struct {
+	Status         string `json:"status"`
+	ExpirationDate string `json:"expirationDate"`
+	AutoRenew      string `json:"autoRenew"` // "1" or "0"
+	WhoisPrivacy   string `json:"whoisPrivacy"`
+}
+
+func (p *Porkbun) GetDomainInfo(domain string) (*DomainInfo, error) {
+	data, err := p.doRequest("/domain/getInfo/"+domain, nil)
+	if err != nil {
+		return nil, err
+	}
+	var resp pbDomainInfoResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, err
+	}
+	info := &DomainInfo{
+		DomainName:         domain,
+		AutoRenewEnabled:   resp.AutoRenew == "1",
+		AutoRenewSupported: true,
+	}
+	// Porkbun returns expiration dates in format "MM/DD/YYYY"
+	if t, err := parseDate(resp.ExpirationDate, "01/02/2006"); err == nil {
+		info.ExpiryDate = &t
+	}
+	return info, nil
+}

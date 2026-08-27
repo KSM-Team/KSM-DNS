@@ -48,14 +48,18 @@ type DNSPlatform struct {
 }
 
 type Domain struct {
-	ID         uint           `gorm:"primarykey" json:"id"`
-	PlatformID uint           `gorm:"index" json:"platform_id"`
-	Platform   DNSPlatform    `gorm:"foreignKey:PlatformID" json:"platform,omitempty"`
-	Domain     string         `gorm:"size:255;index" json:"domain"`
-	Status     string         `gorm:"size:50;default:active" json:"status"`
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                 uint           `gorm:"primarykey" json:"id"`
+	PlatformID         uint           `gorm:"index" json:"platform_id"`
+	Platform           DNSPlatform    `gorm:"foreignKey:PlatformID" json:"platform,omitempty"`
+	Domain             string         `gorm:"size:255;index" json:"domain"`
+	Status             string         `gorm:"size:50;default:active" json:"status"`
+	ExpiresAt          *time.Time     `json:"expires_at"`
+	ExpiryCheckedAt    *time.Time     `json:"expiry_checked_at"`
+	AutoRenew          bool           `gorm:"default:false" json:"auto_renew"`
+	AutoRenewSupported bool           `gorm:"default:false" json:"auto_renew_supported"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 type DNSRecord struct {

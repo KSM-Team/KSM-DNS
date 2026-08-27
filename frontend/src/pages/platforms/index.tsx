@@ -127,6 +127,10 @@ export default function Platforms() {
     } catch (e: any) {
       if (e?.response?.data?.error) {
         Message.error(e.response.data.error)
+      } else if (e?.response?.data?.detail) {
+        Message.error(typeof e.response.data.detail === 'string' ? e.response.data.detail : '请求参数错误')
+      } else {
+        Message.error('操作失败，请重试')
       }
     }
   }

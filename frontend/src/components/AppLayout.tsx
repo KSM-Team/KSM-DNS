@@ -12,6 +12,7 @@ import {
   IconSettings,
   IconUserGroup,
   IconMenu,
+  IconSwap,
 } from '@arco-design/web-react/icon'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
@@ -19,19 +20,64 @@ import api from '@/api'
 
 const { Sider, Header, Content } = Layout
 const MenuItem = Menu.Item
+const SubMenu = Menu.SubMenu
 
-const menuItems = [
-  { key: '/dashboard', icon: <IconDashboard />, label: '仪表盘' },
-  { key: '/platforms', icon: <IconApps />, label: 'DNS平台管理', adminOnly: true },
-  { key: '/domains', icon: <IconCloud />, label: '域名管理' },
-  { key: '/topology', icon: <IconShareAlt />, label: '拓扑图' },
-  { key: '/failover', icon: <IconThunderbolt />, label: '容灾切换' },
-  { key: '/scheduler', icon: <IconClockCircle />, label: '定时切换' },
-  { key: '/ssl', icon: <IconSafe />, label: 'SSL证书' },
-  { key: '/notifications', icon: <IconNotification />, label: '通知管理', adminOnly: true },
-  { key: '/settings', icon: <IconSettings />, label: '系统设置', adminOnly: true },
-  { key: '/users', icon: <IconUserGroup />, label: '子用户管理', adminOnly: true },
+interface MenuItemDef {
+  key: string
+  icon: React.ReactNode
+  label: string
+  adminOnly?: boolean
+}
+
+interface MenuGroup {
+  key: string
+  label: string
+  icon: React.ReactNode
+  children: MenuItemDef[]
+}
+
+const menuGroups: MenuGroup[] = [
+  {
+    key: 'overview', label: '概览', icon: <IconDashboard />,
+    children: [
+      { key: '/dashboard', icon: <IconDashboard />, label: '仪表盘' },
+    ],
+  },
+  {
+    key: 'domain-management', label: '域名管理', icon: <IconCloud />,
+    children: [
+      { key: '/domains', icon: <IconCloud />, label: '域名管理' },
+      { key: '/platforms', icon: <IconApps />, label: 'DNS平台管理', adminOnly: true },
+      { key: '/topology', icon: <IconShareAlt />, label: '拓扑图' },
+      { key: '/domains/expiry', icon: <IconClockCircle />, label: '域名到期查询' },
+      { key: '/migrate', icon: <IconSwap />, label: 'DNS迁移', adminOnly: true },
+    ],
+  },
+  {
+    key: 'dns-switching', label: 'DNS切换', icon: <IconSwap />,
+    children: [
+      { key: '/failover', icon: <IconThunderbolt />, label: '容灾切换' },
+      { key: '/scheduler', icon: <IconClockCircle />, label: '定时切换' },
+    ],
+  },
+  {
+    key: 'security', label: '安全', icon: <IconSafe />,
+    children: [
+      { key: '/ssl', icon: <IconSafe />, label: 'SSL证书' },
+    ],
+  },
+  {
+    key: 'system', label: '系统', icon: <IconSettings />,
+    children: [
+      { key: '/notifications', icon: <IconNotification />, label: '通知管理', adminOnly: true },
+      { key: '/settings', icon: <IconSettings />, label: '系统设置', adminOnly: true },
+      { key: '/users', icon: <IconUserGroup />, label: '子用户管理', adminOnly: true },
+    ],
+  },
 ]
+
+// Flatten all items for selectedKey matching and document title
+const allMenuItems = menuGroups.flatMap((g) => g.children)
 
 export default function AppLayout() {
   const navigate = useNavigate()
@@ -42,8 +88,27 @@ export default function AppLayout() {
   const [drawerVisible, setDrawerVisible] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
-  const selectedKey = '/' + location.pathname.split('/')[1]
-  const visibleMenuItems = menuItems.filter((item) => !item.adminOnly || role === 'admin')
+  // selectedKey: match the longest prefix among all leaf item keys
+  const selectedKey = (() => {
+    const path = location.pathname
+    let best = '/dashboard'
+    let bestLen = 0
+    for (const item of allMenuItems) {
+      if (path === item.key || path.startsWith(item.key + '/')) {
+        if (item.key.length > bestLen) {
+          best = item.key
+          bestLen = item.key.length
+        }
+      }
+    }
+    return best
+  })()
+  const visibleGroups = menuGroups.map((group) => {
+    const visibleChildren = group.children.filter(
+      (item) => !item.adminOnly || role === 'admin'
+    )
+    return { ...group, children: visibleChildren }
+  }).filter((group) => group.children.length > 0)
 
   // 响应式：根据视口宽度判断是否为手机端（与 Sider 的 lg breakpoint 对齐）。
   useEffect(() => {
@@ -73,7 +138,7 @@ export default function AppLayout() {
   }, [])
 
   useEffect(() => {
-    const current = menuItems.find((item) => item.key === selectedKey)
+    const current = allMenuItems.find((item) => item.key === selectedKey)
     document.title = current ? `KSM DNS - ${current.label}` : 'KSM DNS'
   }, [selectedKey])
 
@@ -94,11 +159,23 @@ export default function AppLayout() {
       onClickMenuItem={navigateTo}
       style={{ width: '100%' }}
     >
-      {visibleMenuItems.map((item) => (
-        <MenuItem key={item.key}>
-          {item.icon}
-          {item.label}
-        </MenuItem>
+      {visibleGroups.map((group) => (
+        <SubMenu
+          key={group.key}
+          title={
+            <span>
+              {group.icon}
+              {group.label}
+            </span>
+          }
+        >
+          {group.children.map((item) => (
+            <MenuItem key={item.key}>
+              {item.icon}
+              {item.label}
+            </MenuItem>
+          ))}
+        </SubMenu>
       ))}
     </Menu>
   )

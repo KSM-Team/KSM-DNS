@@ -177,6 +177,13 @@ func main() {
 				admin.DELETE("/domains/:id", dnsHandler.DeleteDomain)
 			admin.POST("/domains/:id/sync-records", dnsHandler.SyncRecords)
 
+				// Domain expiry & auto-renew (admin)
+				admin.POST("/domains/:id/check-expiry", dnsHandler.CheckExpiry)
+				admin.POST("/domains/check-all-expiry", dnsHandler.CheckAllExpiry)
+				admin.PUT("/domains/:id/auto-renew", dnsHandler.UpdateDomainAutoRenew)
+				admin.PUT("/domains/:id", dnsHandler.UpdateDomain)
+				admin.POST("/migrate/dns", dnsHandler.MigrateDNS)
+
 			// Notification Channels (contain secrets, can send arbitrary notifications)
 			admin.GET("/notifications/channels", notifyHandler.ListChannels)
 			admin.POST("/notifications/channels", notifyHandler.CreateChannel)

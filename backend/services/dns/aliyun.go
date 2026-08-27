@@ -224,6 +224,30 @@ func (a *Aliyun) DeleteRecord(domain string, recordID string) error {
 	return err
 }
 
+func (a *Aliyun) GetDomainInfo(domain string) (*DomainInfo, error) {
+	resp, err := a.call("DescribeDomainInfo", url.Values{
+		"DomainName": {domain},
+	})
+	if err != nil {
+		return nil, err
+	}
+	info := &DomainInfo{
+		DomainName:         domain,
+		AutoRenewSupported: false, // Aliyun DNS API doesn't support auto-renew management
+	}
+	if expireDate := stringValue(resp["ExpireDate"]); expireDate != "" {
+		if t, err := parseDate(expireDate, "2006-01-02 15:04:05"); err == nil {
+			info.ExpiryDate = &t
+		} else if t, err := parseDate(expireDate, "2006-01-02"); err == nil {
+			info.ExpiryDate = &t
+		}
+	}
+	if registrar := stringValue(resp["RegistrantName"]); registrar != "" {
+		info.Registrar = registrar
+	}
+	return info, nil
+}
+
 func stringValue(v interface{}) string {
 	if s, ok := v.(string); ok {
 		return s

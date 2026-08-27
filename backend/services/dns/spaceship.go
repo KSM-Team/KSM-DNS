@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Spaceship struct {
@@ -83,12 +84,17 @@ type spCreateResponse struct {
 	ID string `json:"id"`
 }
 
+type spDeleteRequest struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
 func (s *Spaceship) ListDomains() ([]string, error) {
 	var domains []string
-	offset := 0
-	limit := 100
+	skip := 0
+	take := 100
 	for {
-		path := fmt.Sprintf("/domains?limit=%d&offset=%d", limit, offset)
+		path := fmt.Sprintf("/domains?take=%d&skip=%d", take, skip)
 		data, err := s.doRequest("GET", path, nil)
 		if err != nil {
 			return nil, err
@@ -100,19 +106,22 @@ func (s *Spaceship) ListDomains() ([]string, error) {
 		for _, d := range resp.Items {
 			domains = append(domains, d.Name)
 		}
-		if len(resp.Items) < limit {
+		if len(resp.Items) < take {
 			break
 		}
-		offset += limit
+		skip += take
 	}
 	return domains, nil
 }
 
 func (s *Spaceship) ListRecords(domain string) ([]Record, error) {
-	data, err := s.doRequest("GET", "/dns/"+domain+"/records", nil)
+	path := fmt.Sprintf("/dns/records/%s?take=500&skip=0", domain)
+	data, err := s.doRequest("GET", path, nil)
 	if err != nil {
+		fmt.Printf("[Spaceship] ListRecords(%s): API error: %v\n", domain, err)
 		return nil, err
 	}
+	fmt.Printf("[Spaceship] ListRecords(%s): raw response: %s\n", domain, string(data))
 	var resp spRecordsResponse
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, err
@@ -120,8 +129,11 @@ func (s *Spaceship) ListRecords(domain string) ([]Record, error) {
 
 	records := make([]Record, 0, len(resp.Items))
 	for _, r := range resp.Items {
+		// Store type+name as JSON so DeleteRecord can use it (Spaceship API
+		// deletes by matching type+name, not by ID).
+		idJSON, _ := json.Marshal(spDeleteRequest{Type: r.Type, Name: r.Name})
 		records = append(records, Record{
-			ID:    r.ID,
+			ID:    string(idJSON),
 			Name:  r.Name,
 			Type:  r.Type,
 			Value: r.Value,
@@ -132,35 +144,100 @@ func (s *Spaceship) ListRecords(domain string) ([]Record, error) {
 }
 
 func (s *Spaceship) CreateRecord(domain string, rec Record) (string, error) {
-	body := map[string]interface{}{
+	body := []map[string]interface{}{{
 		"name":  rec.Name,
 		"type":  rec.Type,
 		"value": rec.Value,
 		"ttl":   rec.TTL,
-	}
-	data, err := s.doRequest("POST", "/dns/"+domain+"/records", body)
+	}}
+	path := "/dns/records/" + domain
+	data, err := s.doRequest("POST", path, body)
 	if err != nil {
+		fmt.Printf("[Spaceship] CreateRecord(%s): API error: %v\n", domain, err)
 		return "", err
 	}
-	var resp spCreateResponse
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return "", err
+	fmt.Printf("[Spaceship] CreateRecord(%s): raw response: %s\n", domain, string(data))
+	// POST returns an array of created records
+	var items []struct {
+		ID string `json:"id"`
 	}
-	return resp.ID, nil
+	if err := json.Unmarshal(data, &items); err == nil && len(items) > 0 {
+		idJSON, _ := json.Marshal(spDeleteRequest{Type: rec.Type, Name: rec.Name})
+		return string(idJSON), nil
+	}
+	return "", fmt.Errorf("unexpected response from Spaceship create record: %s", string(data))
 }
 
 func (s *Spaceship) UpdateRecord(domain string, recordID string, rec Record) error {
+	// Spaceship API uses PUT /dns/records/{domain} with force:true and items[]
 	body := map[string]interface{}{
-		"name":  rec.Name,
-		"type":  rec.Type,
-		"value": rec.Value,
-		"ttl":   rec.TTL,
+		"force": true,
+		"items": []map[string]interface{}{{
+			"name":  rec.Name,
+			"type":  rec.Type,
+			"value": rec.Value,
+			"ttl":   rec.TTL,
+		}},
 	}
-	_, err := s.doRequest("PUT", "/dns/"+domain+"/records/"+recordID, body)
-	return err
+	path := "/dns/records/" + domain
+	data, err := s.doRequest("PUT", path, body)
+	if err != nil {
+		fmt.Printf("[Spaceship] UpdateRecord(%s): API error: %v\n", domain, err)
+		return err
+	}
+	fmt.Printf("[Spaceship] UpdateRecord(%s): raw response: %s\n", domain, string(data))
+	return nil
 }
 
 func (s *Spaceship) DeleteRecord(domain string, recordID string) error {
-	_, err := s.doRequest("DELETE", "/dns/"+domain+"/records/"+recordID, nil)
-	return err
+	// recordID is a JSON string like {"type":"A","name":"@"} from ListRecords/CreateRecord
+	var delReq []spDeleteRequest
+	if err := json.Unmarshal([]byte(recordID), &delReq); err != nil {
+		// If recordID is not JSON, try as a single object
+		var single spDeleteRequest
+		if err := json.Unmarshal([]byte(recordID), &single); err != nil {
+			return fmt.Errorf("cannot parse Spaceship record ID: %s", recordID)
+		}
+		delReq = []spDeleteRequest{single}
+	}
+	path := "/dns/records/" + domain
+	data, err := s.doRequest("DELETE", path, delReq)
+	if err != nil {
+		fmt.Printf("[Spaceship] DeleteRecord(%s): API error: %v\n", domain, err)
+		return err
+	}
+	fmt.Printf("[Spaceship] DeleteRecord(%s): raw response: %s\n", domain, string(data))
+	return nil
+}
+
+// spDomainInfoResponse is the response from /domains/:name.
+type spDomainInfoResponse struct {
+	Name       string `json:"name"`
+	ExpiresAt  string `json:"expirationDate"`
+	AutoRenew  bool   `json:"autoRenew"`
+	Registrar  string `json:"registrar"`
+}
+
+func (s *Spaceship) GetDomainInfo(domain string) (*DomainInfo, error) {
+	data, err := s.doRequest("GET", "/domains/"+domain, nil)
+	if err != nil {
+		fmt.Printf("[Spaceship] GetDomainInfo(%s): API error: %v\n", domain, err)
+		return nil, err
+	}
+	fmt.Printf("[Spaceship] GetDomainInfo(%s): raw response: %s\n", domain, string(data))
+	var resp spDomainInfoResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		fmt.Printf("[Spaceship] GetDomainInfo(%s): unmarshal error: %v\n", domain, err)
+		return nil, err
+	}
+	info := &DomainInfo{
+		DomainName:         resp.Name,
+		AutoRenewEnabled:   resp.AutoRenew,
+		AutoRenewSupported: true,
+		Registrar:          resp.Registrar,
+	}
+	if t, err := parseDate(resp.ExpiresAt, time.RFC3339); err == nil {
+		info.ExpiryDate = &t
+	}
+	return info, nil
 }

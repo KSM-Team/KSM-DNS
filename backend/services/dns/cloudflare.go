@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Cloudflare struct {
@@ -214,4 +215,77 @@ func (c *Cloudflare) DeleteRecord(domain string, recordID string) error {
 	}
 	_, err = c.doRequest("DELETE", "/zones/"+zoneID+"/dns_records/"+recordID, nil)
 	return err
+}
+
+// cfZoneDetailResponse holds the account ID from zone details.
+type cfZoneDetailResponse struct {
+	Result struct {
+		Account struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"account"`
+	} `json:"result"`
+	Success bool `json:"success"`
+}
+
+// cfRegistrarResponse is the response from /accounts/:account_id/registrar/domains/:domain.
+type cfRegistrarResponse struct {
+	Result struct {
+		ExpiresAt string `json:"expires_at"`
+		AutoRenew bool   `json:"auto_renew"`
+	} `json:"result"`
+	Success bool   `json:"success"`
+	Errors  []struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"errors"`
+}
+
+func (c *Cloudflare) GetDomainInfo(domain string) (*DomainInfo, error) {
+	zoneID, err := c.getZoneID(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	info := &DomainInfo{
+		DomainName:         domain,
+		AutoRenewSupported: false,
+	}
+
+	// Step 1: Get account ID from zone details.
+	zoneData, err := c.doRequest("GET", "/zones/"+zoneID, nil)
+	if err != nil {
+		fmt.Printf("[Cloudflare] GetDomainInfo(%s): get zone details error: %v\n", domain, err)
+		return info, nil
+	}
+	var zoneResp cfZoneDetailResponse
+	if err := json.Unmarshal(zoneData, &zoneResp); err != nil || !zoneResp.Success || zoneResp.Result.Account.ID == "" {
+		fmt.Printf("[Cloudflare] GetDomainInfo(%s): failed to extract account ID from zone\n", domain)
+		return info, nil
+	}
+	accountID := zoneResp.Result.Account.ID
+
+	// Step 2: Query registrar API for domain expiry.
+	data, err := c.doRequest("GET", "/accounts/"+accountID+"/registrar/domains/"+domain, nil)
+	if err != nil {
+		fmt.Printf("[Cloudflare] GetDomainInfo(%s): registrar API error: %v\n", domain, err)
+		return info, nil
+	}
+
+	var resp cfRegistrarResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		fmt.Printf("[Cloudflare] GetDomainInfo(%s): unmarshal error: %v\n", domain, err)
+		return info, nil
+	}
+	if !resp.Success {
+		fmt.Printf("[Cloudflare] GetDomainInfo(%s): API returned success=false, errors=%v\n", domain, resp.Errors)
+		return info, nil
+	}
+
+	info.AutoRenewSupported = true
+	if t, err := parseDate(resp.Result.ExpiresAt, time.RFC3339); err == nil {
+		info.ExpiryDate = &t
+	}
+	info.AutoRenewEnabled = resp.Result.AutoRenew
+	return info, nil
 }

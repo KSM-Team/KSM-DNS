@@ -174,6 +174,8 @@ export default function DomainRecords() {
     }
   }
 
+  const isCloudflare = domain?.platform?.type === 'cloudflare'
+
   const columns = [
     { title: '名称', dataIndex: 'name', width: 200 },
     {
@@ -184,13 +186,13 @@ export default function DomainRecords() {
     },
     { title: '值', dataIndex: 'value', ellipsis: true },
     { title: 'TTL', dataIndex: 'ttl', width: 80, className: 'col-hide-mobile' },
-    {
+    ...(isCloudflare ? [{
       title: '代理',
       dataIndex: 'proxied',
       width: 70,
       className: 'col-hide-mobile',
       render: (v: boolean) => (v ? <Tag color="orange">是</Tag> : <Tag>否</Tag>),
-    },
+    }] : []),
     {
       title: '操作',
       width: 120,
@@ -315,9 +317,11 @@ export default function DomainRecords() {
           <Form.Item label="TTL (秒)" field="ttl">
             <InputNumber min={60} max={86400} />
           </Form.Item>
+          {isCloudflare && (
           <Form.Item label="Cloudflare 代理" field="proxied" triggerPropName="checked">
             <Switch />
           </Form.Item>
+          )}
         </Form>
       </Modal>
     </div>

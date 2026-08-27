@@ -159,3 +159,55 @@ func (n *Namesilo) DeleteRecord(domain string, recordID string) error {
 	})
 	return err
 }
+
+// nsDomainInfoReply is the subset of the Namesilo getDomainInfo response.
+type nsDomainInfoReply struct {
+	Code   string `xml:"reply>code"`
+	Detail string `xml:"reply>detail"`
+	Info   struct {
+		Expires   string `xml:"expires"`
+		AutoRenew string `xml:"auto_renew"`
+	} `xml:"reply>contact_ids"`
+}
+
+func (n *Namesilo) GetDomainInfo(domain string) (*DomainInfo, error) {
+	params := url.Values{"domain": {domain}}
+	params.Set("version", "1")
+	params.Set("type", "xml")
+	params.Set("key", n.apiKey)
+
+	reqURL := "https://www.namesilo.com/api/getDomainInfo?" + params.Encode()
+	resp, err := n.client.Get(reqURL)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrAPIRequest, err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("%w: HTTP %d - %s", ErrAPIRequest, resp.StatusCode, string(body))
+	}
+
+	var reply nsDomainInfoReply
+	if err := xml.Unmarshal(body, &reply); err != nil {
+		return nil, err
+	}
+	if reply.Code != "300" {
+		return nil, fmt.Errorf("%w: %s (%s)", ErrAPIRequest, reply.Detail, reply.Code)
+	}
+
+	info := &DomainInfo{
+		DomainName:         domain,
+		AutoRenewSupported: true,
+	}
+	if reply.Info.Expires != "" {
+		if t, err := parseDate(reply.Info.Expires, "2006-01-02"); err == nil {
+			info.ExpiryDate = &t
+		}
+	}
+	info.AutoRenewEnabled = reply.Info.AutoRenew == "1"
+	return info, nil
+}

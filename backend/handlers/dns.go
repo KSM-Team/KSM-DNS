@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -239,9 +240,10 @@ func (h *DNSHandler) SyncAllDomains(c *gin.Context) {
 			result := h.DB.Where("platform_id = ? AND domain = ?", platform.ID, d).First(&existing)
 			if result.Error != nil {
 				h.DB.Create(&models.Domain{
-					PlatformID: platform.ID,
-					Domain:     d,
-					Status:     "active",
+					PlatformID:         platform.ID,
+					Domain:             d,
+					Status:             "active",
+					AutoRenewSupported: platformSupportsAutoRenew(platform.Type),
 				})
 				totalAdded++
 			}
@@ -530,4 +532,253 @@ func isValidRecordType(t string) bool {
 		return true
 	}
 	return false
+}
+
+// --- Domain Expiry & Auto-Renew ---
+
+// platformSupportsAutoRenew reports whether the given platform type exposes
+// auto-renew management through its API.
+func platformSupportsAutoRenew(platformType string) bool {
+	switch platformType {
+	case "spaceship", "porkbun", "namesilo":
+		return true
+	default:
+		// Cloudflare: only Registrar domains support auto-renew, determined at query time.
+		// Aliyun, Tencent: DNS API doesn't expose auto-renew.
+		return false
+	}
+}
+
+// CheckExpiry queries a single domain's expiry date from the provider.
+func (h *DNSHandler) CheckExpiry(c *gin.Context) {
+	domainID, ok := parseUintParam(c, "id")
+	if !ok {
+		return
+	}
+
+	var domain models.Domain
+	if err := h.DB.Preload("Platform").First(&domain, domainID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "域名不存在"})
+		return
+	}
+
+	provider, err := h.getProvider(domain.Platform)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "初始化提供商失败"})
+		return
+	}
+
+	info, err := provider.GetDomainInfo(domain.Domain)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询域名到期信息失败: " + err.Error()})
+		return
+	}
+
+	now := time.Now()
+	domain.ExpiresAt = info.ExpiryDate
+	domain.ExpiryCheckedAt = &now
+	domain.AutoRenewSupported = info.AutoRenewSupported
+	if info.AutoRenewSupported {
+		domain.AutoRenew = info.AutoRenewEnabled
+	}
+	h.DB.Save(&domain)
+
+	c.JSON(http.StatusOK, gin.H{"data": domain})
+}
+
+// CheckAllExpiry queries all domains' expiry dates from their providers.
+func (h *DNSHandler) CheckAllExpiry(c *gin.Context) {
+	var domains []models.Domain
+	h.DB.Preload("Platform").Find(&domains)
+
+	var results []gin.H
+	var errors []string
+
+	for _, domain := range domains {
+		provider, err := h.getProvider(domain.Platform)
+		if err != nil {
+			errors = append(errors, domain.Domain+": 初始化提供商失败")
+			continue
+		}
+
+		info, err := provider.GetDomainInfo(domain.Domain)
+		if err != nil {
+			errors = append(errors, domain.Domain+": "+err.Error())
+			continue
+		}
+
+		now := time.Now()
+		domain.ExpiresAt = info.ExpiryDate
+		domain.ExpiryCheckedAt = &now
+		domain.AutoRenewSupported = info.AutoRenewSupported
+		if info.AutoRenewSupported {
+			domain.AutoRenew = info.AutoRenewEnabled
+		}
+		h.DB.Save(&domain)
+
+		results = append(results, gin.H{
+			"id":                   domain.ID,
+			"domain":               domain.Domain,
+			"expires_at":           domain.ExpiresAt,
+			"expiry_checked_at":    domain.ExpiryCheckedAt,
+			"auto_renew":           domain.AutoRenew,
+			"auto_renew_supported": domain.AutoRenewSupported,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":   results,
+		"errors": errors,
+		"total":  len(domains),
+	})
+}
+
+// UpdateDomainAutoRenew toggles auto-renew for a domain.
+func (h *DNSHandler) UpdateDomainAutoRenew(c *gin.Context) {
+	domainID, ok := parseUintParam(c, "id")
+	if !ok {
+		return
+	}
+
+	var req struct {
+		AutoRenew bool `json:"auto_renew"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	var domain models.Domain
+	if err := h.DB.First(&domain, domainID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "域名不存在"})
+		return
+	}
+
+	domain.AutoRenew = req.AutoRenew
+	h.DB.Save(&domain)
+
+	c.JSON(http.StatusOK, gin.H{"data": domain})
+}
+
+// UpdateDomain updates domain settings (status, auto_renew, etc.).
+func (h *DNSHandler) UpdateDomain(c *gin.Context) {
+	domainID, ok := parseUintParam(c, "id")
+	if !ok {
+		return
+	}
+
+	var req struct {
+		Status    *string `json:"status"`
+		AutoRenew *bool   `json:"auto_renew"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	var domain models.Domain
+	if err := h.DB.First(&domain, domainID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "域名不存在"})
+		return
+	}
+
+	if req.Status != nil {
+		domain.Status = *req.Status
+	}
+	if req.AutoRenew != nil {
+		domain.AutoRenew = *req.AutoRenew
+	}
+	h.DB.Save(&domain)
+
+	c.JSON(http.StatusOK, gin.H{"data": domain})
+}
+
+// --- DNS Migration ---
+
+// MigrateDNS migrates all DNS records from a source platform/domain to a
+// target platform/domain.
+func (h *DNSHandler) MigrateDNS(c *gin.Context) {
+	var req struct {
+		SourcePlatformID uint   `json:"source_platform_id" binding:"required"`
+		SourceDomain     string `json:"source_domain" binding:"required"`
+		TargetPlatformID uint   `json:"target_platform_id" binding:"required"`
+		TargetDomain     string `json:"target_domain" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	// Load source platform
+	var srcPlatform models.DNSPlatform
+	if err := h.DB.First(&srcPlatform, req.SourcePlatformID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "源平台不存在"})
+		return
+	}
+	srcProvider, err := h.getProvider(srcPlatform)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "初始化源平台失败: " + err.Error()})
+		return
+	}
+
+	// Load target platform
+	var tgtPlatform models.DNSPlatform
+	if err := h.DB.First(&tgtPlatform, req.TargetPlatformID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "目标平台不存在"})
+		return
+	}
+	tgtProvider, err := h.getProvider(tgtPlatform)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "初始化目标平台失败: " + err.Error()})
+		return
+	}
+
+	// List all records from source
+	records, err := srcProvider.ListRecords(req.SourceDomain)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取源域名记录失败: " + err.Error()})
+		return
+	}
+
+	// Migrate each record to target
+	type resultItem struct {
+		Name  string `json:"name"`
+		Type  string `json:"type"`
+		Value string `json:"value"`
+		TTL   int    `json:"ttl"`
+		Error string `json:"error,omitempty"`
+	}
+
+	var results []resultItem
+	successCount := 0
+	failCount := 0
+
+	for _, rec := range records {
+		// Proxied only works on Cloudflare
+		if tgtPlatform.Type != "cloudflare" {
+			rec.Proxied = false
+		}
+
+		_, err := tgtProvider.CreateRecord(req.TargetDomain, rec)
+		item := resultItem{
+			Name:  rec.Name,
+			Type:  rec.Type,
+			Value: rec.Value,
+			TTL:   rec.TTL,
+		}
+		if err != nil {
+			item.Error = err.Error()
+			failCount++
+		} else {
+			successCount++
+		}
+		results = append(results, item)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"total":   len(records),
+		"success": successCount,
+		"failed":  failCount,
+		"results": results,
+	})
 }

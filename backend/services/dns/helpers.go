@@ -2,6 +2,7 @@ package dns
 
 import (
 	"encoding/json"
+	"time"
 
 	"ksm-dns/models"
 )
@@ -16,6 +17,12 @@ func parseInt(s string) int {
 		n = n*10 + int(c-'0')
 	}
 	return n
+}
+
+// parseDate attempts to parse a date string in the given layout. Returns the
+// parsed time or an error if the string is empty or malformed.
+func parseDate(s, layout string) (time.Time, error) {
+	return time.Parse(layout, s)
 }
 
 // ProviderFor creates a DNS Provider from a platform record by parsing its

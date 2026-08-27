@@ -1,4 +1,4 @@
-import { Card, Grid, Statistic, Message } from '@arco-design/web-react'
+import { Card, Grid, Statistic, Message, Alert } from '@arco-design/web-react'
 import {
   IconCloud,
   IconThunderbolt,
@@ -38,6 +38,7 @@ interface Cert {
 }
 
 export default function Dashboard() {
+  const isHttp = window.location.protocol === 'http:'
   const [stats, setStats] = useState<Stats>({ domains: 0, failover_rules: 0, scheduler_tasks: 0, ssl_certificates: 0 })
   const [platforms, setPlatforms] = useState<Platform[]>([])
   const [certs, setCerts] = useState<Cert[]>([])
@@ -88,6 +89,16 @@ export default function Dashboard() {
 
   return (
     <div>
+      {isHttp && (
+        <Alert
+          type="warning"
+          showIcon
+          closable
+          title="安全警告"
+          content="您当前使用的是 HTTP 连接，存在安全风险！建议使用 HTTPS 以确保数据传输安全。"
+          style={{ marginBottom: 16 }}
+        />
+      )}
       <h3 style={{ marginBottom: 16 }}>仪表盘</h3>
       <Row gutter={16} className="dashboard-stats">
         <Col span={6}>

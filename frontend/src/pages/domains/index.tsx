@@ -128,6 +128,7 @@ export default function Domains() {
       ),
     },
     {
+      key: 'platform_type',
       title: '类型',
       dataIndex: 'platform',
       width: 120,
@@ -142,6 +143,7 @@ export default function Domains() {
       },
     },
     {
+      key: 'platform_name',
       title: '服务商',
       dataIndex: 'platform',
       width: 140,
