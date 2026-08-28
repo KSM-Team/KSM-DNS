@@ -96,6 +96,21 @@ type DomainTag struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type IPAddress struct {
+	ID        uint           `gorm:"primarykey" json:"id"`
+	IP        string         `gorm:"size:45;uniqueIndex" json:"ip"`
+	Country   string         `gorm:"size:100" json:"country"`
+	City      string         `gorm:"size:100" json:"city"`
+	Region    string         `gorm:"size:100" json:"region"`
+	ISP       string         `gorm:"size:200" json:"isp"`
+	Org       string         `gorm:"size:200" json:"org"`
+	Latitude  float64        `json:"latitude"`
+	Longitude float64        `json:"longitude"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 type FailoverRule struct {
 	ID             uint           `gorm:"primarykey" json:"id"`
 	Name           string         `gorm:"size:200" json:"name"`

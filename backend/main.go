@@ -56,6 +56,7 @@ func main() {
 		&models.NotificationChannel{},
 		&models.NotificationLog{},
 		&models.PushSubscription{},
+		&models.IPAddress{},
 	)
 
 	initDefaultUser(db)
@@ -84,6 +85,7 @@ func main() {
 	go sslService.StartRenewLoop(sslStop)
 	deployService := deploy.NewService(db)
 	tagHandler := &handlers.TagHandler{DB: db}
+	visualDNSHandler := &handlers.VisualDNSHandler{DB: db}
 	sslHandler := &handlers.SSLHandler{DB: db, SSL: sslService, Deploy: deployService}
 
 	api := r.Group("/api")
@@ -161,6 +163,14 @@ func main() {
 			admin.PUT("/tags/:id", tagHandler.UpdateTag)
 			admin.DELETE("/tags/:id", tagHandler.DeleteTag)
 			admin.POST("/domains/:id/tags", tagHandler.SetDomainTags)
+
+				// Visual DNS (IP management + record auto-generation)
+				admin.GET("/ips", visualDNSHandler.ListIPs)
+				admin.POST("/ips", visualDNSHandler.CreateIP)
+				admin.DELETE("/ips/:id", visualDNSHandler.DeleteIP)
+				admin.POST("/ips/:id/refresh", visualDNSHandler.RefreshIPGeo)
+				admin.GET("/ip-geo/:ip", visualDNSHandler.LookupIPGeo)
+				admin.GET("/visual-dns/records", visualDNSHandler.AutoGenerateRecords)
 
 			// User management
 			admin.GET("/users", usersHandler.ListUsers)

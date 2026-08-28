@@ -16,6 +16,7 @@
     "@visactor/react-vchart": "^2.1.6",
     "@visactor/vchart": "^2.1.6",
     "@visactor/vchart-arco-theme": "^1.13.1",
+    "@xyflow/react": "^12.11.5",
     "axios": "^1.19.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

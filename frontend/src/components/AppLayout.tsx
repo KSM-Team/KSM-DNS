@@ -13,6 +13,7 @@ import {
   IconUserGroup,
   IconMenu,
   IconSwap,
+  IconBranch,
 } from '@arco-design/web-react/icon'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
@@ -48,6 +49,7 @@ const menuGroups: MenuGroup[] = [
       { key: '/platforms', icon: <IconApps />, label: 'DNS平台管理', adminOnly: true },
       { key: '/topology', icon: <IconShareAlt />, label: '拓扑图' },
       { key: '/migrate', icon: <IconSwap />, label: 'DNS迁移', adminOnly: true },
+      { key: '/visual-dns', icon: <IconBranch />, label: '可视化解析', adminOnly: true },
     ],
   },
   {
