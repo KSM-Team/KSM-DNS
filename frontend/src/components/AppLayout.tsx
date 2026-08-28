@@ -36,13 +36,11 @@ interface MenuGroup {
   children: MenuItemDef[]
 }
 
+const topLevelItems: MenuItemDef[] = [
+  { key: '/dashboard', icon: <IconDashboard />, label: '仪表盘' },
+]
+
 const menuGroups: MenuGroup[] = [
-  {
-    key: 'overview', label: '概览', icon: <IconDashboard />,
-    children: [
-      { key: '/dashboard', icon: <IconDashboard />, label: '仪表盘' },
-    ],
-  },
   {
     key: 'domain-management', label: '域名管理', icon: <IconCloud />,
     children: [
@@ -77,7 +75,7 @@ const menuGroups: MenuGroup[] = [
 ]
 
 // Flatten all items for selectedKey matching and document title
-const allMenuItems = menuGroups.flatMap((g) => g.children)
+const allMenuItems = [...topLevelItems, ...menuGroups.flatMap((g) => g.children)]
 
 export default function AppLayout() {
   const navigate = useNavigate()
@@ -159,6 +157,12 @@ export default function AppLayout() {
       onClickMenuItem={navigateTo}
       style={{ width: '100%' }}
     >
+      {topLevelItems.map((item) => (
+        <MenuItem key={item.key}>
+          {item.icon}
+          {item.label}
+        </MenuItem>
+      ))}
       {visibleGroups.map((group) => (
         <SubMenu
           key={group.key}

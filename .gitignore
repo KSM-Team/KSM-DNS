@@ -25,6 +25,9 @@ Thumbs.db
 *.log
 /tmp
 
+# Dev tools
+backend/cmd/
+
 # Claude
 .claude
 .commandcode
