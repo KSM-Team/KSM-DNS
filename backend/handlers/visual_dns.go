@@ -186,8 +186,8 @@ func (h *VisualDNSHandler) AutoGenerateRecords(c *gin.Context) {
 	h.DB.Preload("Domain.Platform").Find(&records)
 
 	nodeMap := make(map[string]bool)
-	var nodes []node
-	var edges []edge
+	nodes := make([]node, 0)
+	edges := make([]edge, 0)
 
 	for _, r := range records {
 		if r.Domain.ID == 0 {
