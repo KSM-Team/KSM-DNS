@@ -57,6 +57,7 @@ type Domain struct {
 	ExpiryCheckedAt    *time.Time     `json:"expiry_checked_at"`
 	AutoRenew          bool           `gorm:"default:false" json:"auto_renew"`
 	AutoRenewSupported bool           `gorm:"default:false" json:"auto_renew_supported"`
+	Tags               []DomainTag    `gorm:"foreignKey:DomainID" json:"tags,omitempty"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
@@ -76,6 +77,23 @@ type DNSRecord struct {
 	CreatedAt        time.Time      `json:"created_at"`
 	UpdatedAt        time.Time      `json:"updated_at"`
 	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+type Tag struct {
+	ID        uint           `gorm:"primarykey" json:"id"`
+	Name      string         `gorm:"size:100;uniqueIndex" json:"name"`
+	Color     string         `gorm:"size:20;default:arcoblue" json:"color"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+type DomainTag struct {
+	ID        uint      `gorm:"primarykey" json:"id"`
+	DomainID  uint      `gorm:"index" json:"domain_id"`
+	TagID     uint      `gorm:"index" json:"tag_id"`
+	Tag       Tag       `gorm:"foreignKey:TagID" json:"tag,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type FailoverRule struct {

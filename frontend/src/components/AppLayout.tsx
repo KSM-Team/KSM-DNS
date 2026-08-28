@@ -47,7 +47,6 @@ const menuGroups: MenuGroup[] = [
       { key: '/domains', icon: <IconCloud />, label: '域名管理' },
       { key: '/platforms', icon: <IconApps />, label: 'DNS平台管理', adminOnly: true },
       { key: '/topology', icon: <IconShareAlt />, label: '拓扑图' },
-      { key: '/domains/expiry', icon: <IconClockCircle />, label: '域名到期查询' },
       { key: '/migrate', icon: <IconSwap />, label: 'DNS迁移', adminOnly: true },
     ],
   },

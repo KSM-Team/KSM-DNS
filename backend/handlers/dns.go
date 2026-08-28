@@ -261,7 +261,7 @@ func (h *DNSHandler) SyncAllDomains(c *gin.Context) {
 
 func (h *DNSHandler) ListDomains(c *gin.Context) {
 	var domains []models.Domain
-	query := h.DB.Preload("Platform")
+	query := h.DB.Preload("Platform").Preload("Tags.Tag")
 
 	domainIDs, isAdmin := allowedDomainIDs(h.DB, c)
 	if !isAdmin {
@@ -273,6 +273,9 @@ func (h *DNSHandler) ListDomains(c *gin.Context) {
 	if kw := c.Query("keyword"); kw != "" {
 		like := "%" + kw + "%"
 		query = query.Where("domain LIKE ?", like)
+	}
+	if tagID := c.Query("tag_id"); tagID != "" {
+		query = query.Where("id IN (SELECT domain_id FROM domain_tags WHERE tag_id = ?)", tagID)
 	}
 
 	p := parsePagination(c, 20)

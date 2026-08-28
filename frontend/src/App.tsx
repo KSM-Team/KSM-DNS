@@ -5,7 +5,6 @@ import Login from '@/pages/login'
 import Dashboard from '@/pages/dashboard'
 import Domains from '@/pages/domains'
 import DomainRecords from '@/pages/domains/records'
-import DomainExpiry from '@/pages/domains/expiry'
 import DNSMigrate from '@/pages/migrate'
 import Platforms from '@/pages/platforms'
 import Topology from '@/pages/topology'
@@ -26,7 +25,6 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/platforms" element={<Platforms />} />
             <Route path="/domains" element={<Domains />} />
-            <Route path="/domains/expiry" element={<DomainExpiry />} />
             <Route path="/migrate" element={<DNSMigrate />} />
             <Route path="/domains/:id/records" element={<DomainRecords />} />
             <Route path="/topology" element={<Topology />} />

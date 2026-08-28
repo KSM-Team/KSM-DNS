@@ -44,6 +44,8 @@ func main() {
 		&models.Setting{},
 		&models.DNSPlatform{},
 		&models.Domain{},
+		&models.Tag{},
+		&models.DomainTag{},
 		&models.DNSRecord{},
 		&models.FailoverRule{},
 		&models.FailoverLog{},
@@ -81,6 +83,7 @@ func main() {
 	sslStop := make(chan struct{})
 	go sslService.StartRenewLoop(sslStop)
 	deployService := deploy.NewService(db)
+	tagHandler := &handlers.TagHandler{DB: db}
 	sslHandler := &handlers.SSLHandler{DB: db, SSL: sslService, Deploy: deployService}
 
 	api := r.Group("/api")
@@ -152,6 +155,13 @@ func main() {
 		admin := protected.Group("")
 		admin.Use(middleware.AdminOnly())
 		{
+			// Tag management
+			admin.GET("/tags", tagHandler.ListTags)
+			admin.POST("/tags", tagHandler.CreateTag)
+			admin.PUT("/tags/:id", tagHandler.UpdateTag)
+			admin.DELETE("/tags/:id", tagHandler.DeleteTag)
+			admin.POST("/domains/:id/tags", tagHandler.SetDomainTags)
+
 			// User management
 			admin.GET("/users", usersHandler.ListUsers)
 			admin.GET("/users/:id", usersHandler.GetUser)

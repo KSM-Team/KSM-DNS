@@ -6,7 +6,6 @@ import {
   Space,
   Message,
   Select,
-  Input,
   Tag,
   Typography,
   Grid,
@@ -53,6 +52,7 @@ export default function DNSMigrate() {
   const [srcDomain, setSrcDomain] = useState('')
   const [tgtPlatformId, setTgtPlatformId] = useState<number | undefined>()
   const [tgtDomain, setTgtDomain] = useState('')
+  const [tgtDomainId, setTgtDomainId] = useState<number | undefined>()
   const [previewRecords, setPreviewRecords] = useState<DNSRecord[]>([])
   const [previewLoading, setPreviewLoading] = useState(false)
   const [migrating, setMigrating] = useState(false)
@@ -68,6 +68,7 @@ export default function DNSMigrate() {
   }, [])
 
   const srcDomains = domains.filter((d) => d.platform_id === srcPlatformId)
+  const tgtDomains = domains.filter((d) => d.platform_id === tgtPlatformId)
 
   const handlePreview = async () => {
     if (!srcPlatformId || !srcDomainId) {
@@ -228,6 +229,8 @@ export default function DNSMigrate() {
                   value={tgtPlatformId}
                   onChange={(v) => {
                     setTgtPlatformId(v)
+                    setTgtDomainId(undefined)
+                    setTgtDomain('')
                     setResults([])
                   }}
                 >
@@ -244,15 +247,34 @@ export default function DNSMigrate() {
               </div>
               <div>
                 <Text type="secondary" style={{ marginBottom: 4, display: 'block' }}>目标域名</Text>
-                <Input
-                  placeholder="输入目标域名，如 example.com"
-                  value={tgtDomain}
-                  onChange={(v) => {
-                    setTgtDomain(v)
+                <Select
+                  placeholder={tgtPlatformId ? '选择目标域名' : '请先选择目标平台'}
+                  style={{ width: '100%' }}
+                  value={tgtDomainId}
+                  onChange={(v, _extra) => {
+                    setTgtDomainId(v)
+                    const found = tgtDomains.find((d) => d.id === v)
+                    if (found) {
+                      setTgtDomain(found.domain)
+                    } else {
+                      // allowCreate: user typed a custom domain
+                      setTgtDomain(v as string)
+                    }
                     setResults([])
                   }}
                   disabled={!tgtPlatformId}
-                />
+                  allowCreate
+                  filterOption={(inputValue, option) => {
+                    const text = (option.props as any)?.children?.toString() || ''
+                    return text.toLowerCase().includes(inputValue.toLowerCase())
+                  }}
+                >
+                  {tgtDomains.map((d) => (
+                    <Select.Option key={d.id} value={d.id}>
+                      {d.domain}
+                    </Select.Option>
+                  ))}
+                </Select>
               </div>
               <Button
                 type="primary"
