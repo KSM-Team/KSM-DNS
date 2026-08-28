@@ -108,7 +108,10 @@ export default function Topology() {
       <SankeyChart
         spec={{
           type: 'sankey',
-          data: [{ values: links }],
+          data: [
+            { id: 'links', values: links },
+            { id: 'nodes', values: [] },
+          ],
           categoryField: 'source',
           valueField: 'value',
           sourceField: 'source',
