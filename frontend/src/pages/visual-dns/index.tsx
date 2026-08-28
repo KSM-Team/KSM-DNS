@@ -329,7 +329,7 @@ export default function VisualDNS() {
     const close = () => setCtxMenu(null)
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
     const onClick = (e: MouseEvent) => {
-      if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target as Node)) {
+      if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target as HTMLElement)) {
         close()
       }
     }
@@ -960,7 +960,7 @@ export default function VisualDNS() {
         })
 
         // Place shared IPs (first domain that references them)
-        sharedForThis.forEach((ipId, ipIdx) => {
+        sharedForThis.forEach((ipId) => {
           const node = ipNodes.find((n) => n.id === ipId)
           if (!node) return
           const sharedIdx = Array.from(sharedIPs).indexOf(ipId)
