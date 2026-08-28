@@ -10,6 +10,21 @@ import (
 	"time"
 )
 
+// trimDomainSuffix strips the domain suffix from a record name if it ends with
+// the given domain. For example, "_acme-challenge.dns.ksm.im" with domain
+// "dns.ksm.im" becomes "_acme-challenge". A bare "@" or name that doesn't end
+// with the domain is returned unchanged.
+func trimDomainSuffix(name, domain string) string {
+	if name == "@" || name == "" {
+		return name
+	}
+	suffix := "." + domain
+	if strings.HasSuffix(name, suffix) {
+		return name[:len(name)-len(suffix)]
+	}
+	return name
+}
+
 type Spaceship struct {
 	apiKey    string
 	apiSecret string
@@ -244,6 +259,12 @@ func spItem(rec Record) map[string]interface{} {
 }
 
 func (s *Spaceship) CreateRecord(domain string, rec Record) (string, error) {
+	// Trim the domain suffix from the record name. The ACME client (and
+	// potentially other callers) pass the full FQDN like
+	// "_acme-challenge.dns.ksm.im", but the Spaceship API expects just the
+	// subdomain part ("_acme-challenge") since the zone is already in the URL.
+	rec.Name = trimDomainSuffix(rec.Name, domain)
+
 	// Spaceship uses PUT (not POST) for creating DNS records, with the same
 	// {force, items} envelope as UpdateRecord.
 	body := map[string]interface{}{
@@ -265,6 +286,9 @@ func (s *Spaceship) CreateRecord(domain string, rec Record) (string, error) {
 }
 
 func (s *Spaceship) UpdateRecord(domain string, recordID string, rec Record) error {
+	// Trim the domain suffix (same rationale as CreateRecord).
+	rec.Name = trimDomainSuffix(rec.Name, domain)
+
 	// Spaceship API uses PUT /dns/records/{domain} with force:true and items[]
 	body := map[string]interface{}{
 		"force": true,

@@ -189,6 +189,10 @@ func (s *Service) Issue(cert *models.SSLCertificate) error {
 		}
 		created = append(created, recordID)
 
+		// Give DNS a moment to propagate before Let's Encrypt queries the TXT
+		// record. Some providers need a few seconds even with low TTLs.
+		time.Sleep(5 * time.Second)
+
 		if _, err := client.Accept(ctx, chal); err != nil {
 			return fmt.Errorf("确认挑战失败: %w", err)
 		}
