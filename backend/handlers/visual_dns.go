@@ -160,8 +160,25 @@ func (h *VisualDNSHandler) LookupIPGeo(c *gin.Context) {
 
 // --- Auto-generate records ---
 
-// AutoGenerateRecords returns all DNS records as a node-edge graph suitable
-// for the visual DNS canvas.
+// collectUniqueIPs extracts unique IP values from A/AAAA DNS records.
+func collectUniqueIPs(db *gorm.DB) []string {
+	var records []models.DNSRecord
+	db.Where("type IN ?", []string{"A", "AAAA"}).Find(&records)
+	seen := make(map[string]bool)
+	var ips []string
+	for _, r := range records {
+		v := strings.TrimSpace(r.Value)
+		if v != "" && !seen[v] {
+			seen[v] = true
+			ips = append(ips, v)
+		}
+	}
+	return ips
+}
+
+// AutoGenerateRecords returns all DNS records as a node-edge graph and
+// automatically saves any IPs found in A/AAAA records to the IPAddress table
+// (with geo lookup) so they appear in the IP sidebar.
 func (h *VisualDNSHandler) AutoGenerateRecords(c *gin.Context) {
 	type node struct {
 		ID       string `json:"id"`
@@ -182,6 +199,30 @@ func (h *VisualDNSHandler) AutoGenerateRecords(c *gin.Context) {
 		TTL    int    `json:"ttl"`
 	}
 
+	// Auto-save unique IPs from A/AAAA records to IPAddress table
+	for _, ip := range collectUniqueIPs(h.DB) {
+		var existing models.IPAddress
+		if h.DB.Where("ip = ?", ip).First(&existing).Error == nil {
+			continue // already saved
+		}
+		geo, err := fetchIPGeo(ip)
+		if err != nil {
+			// Silently skip — ip-api may be rate-limited or unreachable
+			continue
+		}
+		h.DB.Create(&models.IPAddress{
+			IP:        ip,
+			Country:   geo.Country,
+			City:      geo.City,
+			Region:    geo.RegionName,
+			ISP:       geo.ISP,
+			Org:       geo.Org,
+			Latitude:  geo.Lat,
+			Longitude: geo.Lon,
+		})
+	}
+
+	// Build node-edge graph from all DNS records
 	var records []models.DNSRecord
 	h.DB.Preload("Domain.Platform").Find(&records)
 
@@ -210,10 +251,8 @@ func (h *VisualDNSHandler) AutoGenerateRecords(c *gin.Context) {
 			})
 		}
 
-		// Only create IP nodes for A/AAAA records that look like IPs
 		ipVal := r.Value
 		if r.Type != "A" && r.Type != "AAAA" {
-			// For other record types, create a generic target node
 			targetID := fmt.Sprintf("target-%d", r.ID)
 			nodes = append(nodes, node{
 				ID:    targetID,
@@ -234,11 +273,10 @@ func (h *VisualDNSHandler) AutoGenerateRecords(c *gin.Context) {
 		ipID := fmt.Sprintf("ip-%s", ipVal)
 		if !nodeMap[ipID] {
 			nodeMap[ipID] = true
-			// Try to look up geo info from saved IPs
 			var savedIP models.IPAddress
 			ipNode := node{
-				ID:   ipID,
-				Type: "ip",
+				ID:    ipID,
+				Type:  "ip",
 				Label: ipVal,
 			}
 			if h.DB.Where("ip = ?", ipVal).First(&savedIP).Error == nil {

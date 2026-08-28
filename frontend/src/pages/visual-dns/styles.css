@@ -20,7 +20,10 @@
 .visual-dns-canvas {
   height: calc(100vh - 260px);
   min-height: 400px;
-  background: var(--color-fill-1);
+  background:
+    radial-gradient(circle at 20% 50%, var(--color-primary-light-1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--color-success-light-1) 0%, transparent 40%),
+    var(--color-fill-1);
 }
 
 .visual-dns-drag-item {
@@ -32,7 +35,7 @@
   border-radius: 4px;
   cursor: grab;
   background: var(--color-fill-1);
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
   font-size: 13px;
   border: 1px solid var(--color-border-2);
 }
@@ -40,10 +43,12 @@
 .visual-dns-drag-item:hover {
   background: var(--color-fill-2);
   border-color: var(--color-primary-light-3);
+  transform: translateX(2px);
 }
 
 .visual-dns-drag-item:active {
   cursor: grabbing;
+  transform: scale(0.98);
 }
 
 /* ReactFlow overrides for dark theme */
@@ -51,11 +56,25 @@
   font-size: 13px;
 }
 
+.react-flow__node:hover {
+  z-index: 10 !important;
+}
+
+.react-flow__node:hover > div {
+  transform: scale(1.03);
+}
+
 .react-flow__handle {
   width: 10px;
   height: 10px;
   background: var(--color-primary-light-2);
   border: 2px solid var(--color-bg-2);
+  transition: width 0.15s, height 0.15s, background 0.15s;
+}
+
+.react-flow__handle:hover {
+  width: 14px;
+  height: 14px;
 }
 
 .react-flow__handle-connecting {
@@ -68,6 +87,147 @@
 
 .react-flow__edge-path {
   stroke: var(--color-primary-light-2);
+  stroke-width: 2;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+  transition: stroke 0.2s, stroke-width 0.2s;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--color-primary-light-1);
+  stroke-width: 3;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--color-primary);
+  stroke-width: 3;
+}
+
+/* Edge label styling */
+.react-flow__edge-textbg {
+  fill: var(--color-bg-2);
+  stroke: var(--color-border-2);
+  stroke-width: 1px;
+  rx: 4;
+}
+
+.react-flow__edge-text {
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--color-text-2);
+}
+
+/* Minimap */
+.react-flow__minimap {
+  border-radius: 8px;
+  border: 1px solid var(--color-border-2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Controls */
+.react-flow__controls {
+  border-radius: 8px;
+  border: 1px solid var(--color-border-2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  border-bottom: 1px solid var(--color-border-2);
+  background: var(--color-bg-2);
+  fill: var(--color-text-2);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-fill-2);
+}
+
+/* Background dots */
+.react-flow__background {
+  background-color: transparent !important;
+}
+
+/* Selection */
+.react-flow__selection {
+  border: 1px solid var(--color-primary-light-3);
+  background: rgba(var(--primary-6), 0.06);
+}
+
+/* Connection line */
+.react-flow__connection-line {
+  stroke: var(--color-primary-light-2);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+
+/* Attribution (hide) */
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* ── Context Menu ─────────────────────────────────────────────── */
+
+.visual-dns-ctx-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 180px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-2);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+  animation: ctxMenuIn 0.12s ease-out;
+}
+
+@keyframes ctxMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.visual-dns-ctx-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-1);
+  transition: background 0.12s;
+  user-select: none;
+}
+
+.visual-dns-ctx-menu-item:hover {
+  background: var(--color-fill-2);
+}
+
+.visual-dns-ctx-menu-item-danger {
+  color: var(--color-danger);
+}
+
+.visual-dns-ctx-menu-item-danger:hover {
+  background: var(--color-danger-light-1);
+}
+
+.visual-dns-ctx-menu-icon {
+  display: flex;
+  align-items: center;
+  width: 16px;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.visual-dns-ctx-menu-divider {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--color-border-2);
 }
 
 /* Mobile responsive */

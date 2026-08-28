@@ -37,6 +37,9 @@
 
 - **多平台 DNS 管理** — 支持 Cloudflare、阿里云 DNS、腾讯云 DNSPod、Namesilo、Spaceship、Porkbun
 - **DNS 记录管理** — 增删改查 A/AAAA/CNAME/MX/TXT/NS/SRV/CAA 记录，支持批量同步
+- **可视化解析** — 拖拽式画布工具，可视化编辑 DNS 解析拓扑，支持节点分组折叠
+- **DNS 拓扑图** — 桑基图展示域名-IP 解析关系，一目了然
+- **IP 地址管理** — 自动获取 IP 地理信息（国家/城市/ISP），支持 ip-api.com 查询
 - **DNS 一键迁移** — 跨账号、跨平台全量 DNS 解析无损搬迁
 - **域名到期查询** — 批量查询域名到期时间，支持自动续费开关
 - **智能故障转移** — 健康检查（TCP/HTTP/HTTPS/Ping）+ 自动切换备份记录
@@ -139,7 +142,7 @@ npm run dev
 KSM-DNS/
 ├── backend/
 │   ├── config/          # 配置加载
-│   ├── handlers/        # HTTP 处理器
+│   ├── handlers/        # HTTP 处理器（含 visual_dns.go 可视化解析 API）
 │   ├── middleware/       # 中间件（JWT/CORS/安全头/速率限制/密码强制修改）
 │   ├── models/          # 数据模型 + GORM 加密钩子
 │   ├── services/
@@ -158,6 +161,8 @@ KSM-DNS/
 │   │   ├── pages/
 │   │   │   ├── dashboard/   # 仪表盘
 │   │   │   ├── domains/     # 域名管理 / 到期查询 / 解析管理
+│   │   │   ├── topology/    # DNS 拓扑图（桑基图）
+│   │   │   ├── visual-dns/  # 可视化解析（拖拽画布 + 节点分组）
 │   │   │   ├── migrate/     # DNS 迁移
 │   │   │   ├── platforms/   # DNS 平台管理
 │   │   │   ├── failover/    # 容灾切换
