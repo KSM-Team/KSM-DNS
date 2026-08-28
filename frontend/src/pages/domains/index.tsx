@@ -11,6 +11,8 @@ import {
   Tag,
   Switch,
   Typography,
+  Modal,
+  Checkbox,
 } from '@arco-design/web-react'
 import {
   IconSync,
@@ -73,6 +75,9 @@ export default function Domains() {
   const [tagManagerVisible, setTagManagerVisible] = useState(false)
   const [allTags, setAllTags] = useState<TagItem[]>([])
   const [toggling, setToggling] = useState<Record<number, boolean>>({})
+  const [tagAssignVisible, setTagAssignVisible] = useState(false)
+  const [tagAssignDomainId, setTagAssignDomainId] = useState<number | null>(null)
+  const [tagAssignSelected, setTagAssignSelected] = useState<number[]>([])
   const navigate = useNavigate()
 
   const fetchDomains = useCallback(async () => {
@@ -203,6 +208,27 @@ export default function Domains() {
     }
   }
 
+  // Open tag assignment modal for a domain
+  const openTagAssign = (domain: Domain) => {
+    setTagAssignDomainId(domain.id)
+    const currentTagIds = (domain.tags || []).map((dt) => dt.tag_id)
+    setTagAssignSelected(currentTagIds)
+    setTagAssignVisible(true)
+  }
+
+  // Save tag assignment
+  const handleTagAssign = async () => {
+    if (tagAssignDomainId === null) return
+    try {
+      await api.post(`/domains/${tagAssignDomainId}/tags`, { tag_ids: tagAssignSelected })
+      Message.success('标签已更新')
+      setTagAssignVisible(false)
+      fetchDomains()
+    } catch (e: any) {
+      Message.error(e?.response?.data?.error || '标签分配失败')
+    }
+  }
+
   const getExpiryStatus = (domain: Domain) => {
     const { expires_at, expiry_checked_at } = domain
     if (!expires_at) {
@@ -330,7 +356,7 @@ export default function Domains() {
     },
     {
       title: '操作',
-      width: 260,
+      width: 300,
       render: (_: any, record: Domain) => (
         <Space>
           <Button
@@ -346,6 +372,9 @@ export default function Domains() {
           </Button>
           <Button type="text" icon={<IconSync />} onClick={() => handleCheckOneExpiry(record.id)} size="small">
             <span className="mobile-btn-text">到期</span>
+          </Button>
+          <Button type="text" icon={<IconSettings />} onClick={() => openTagAssign(record)} size="small">
+            <span className="mobile-btn-text">标签</span>
           </Button>
           <Popconfirm title="确定删除此域名？" onOk={() => handleDelete(record.id)}>
             <Button type="text" status="danger" icon={<IconDelete />} size="small">
@@ -397,7 +426,7 @@ export default function Domains() {
               <span className="mobile-btn-text">查询到期</span>
             </Button>
             <Button icon={<IconTags />} onClick={() => setTagManagerVisible(true)}>
-              <span className="mobile-btn-text">标签</span>
+              <span className="mobile-btn-text">标签管理</span>
             </Button>
           </Space>
           <div style={{ flex: 1 }} />
@@ -449,6 +478,34 @@ export default function Domains() {
           api.get('/tags').then((res) => setAllTags(res.data.data || [])).catch(() => {})
         }}
       />
+
+      {/* Tag assignment modal for individual domains */}
+      <Modal
+        title="分配标签"
+        visible={tagAssignVisible}
+        onOk={handleTagAssign}
+        onCancel={() => setTagAssignVisible(false)}
+        okText="保存"
+        cancelText="取消"
+      >
+        <div style={{ padding: '8px 0' }}>
+          {allTags.length === 0 ? (
+            <span style={{ color: 'var(--color-text-4)' }}>暂无标签，请先在「标签管理」中创建</span>
+          ) : (
+            <Checkbox.Group
+              direction="vertical"
+              value={tagAssignSelected}
+              onChange={(v) => setTagAssignSelected(v as number[])}
+            >
+              {allTags.map((t) => (
+                <Checkbox key={t.id} value={t.id}>
+                  <Tag color={t.color} size="small" style={{ marginRight: 4 }}>{t.name}</Tag>
+                </Checkbox>
+              ))}
+            </Checkbox.Group>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }
